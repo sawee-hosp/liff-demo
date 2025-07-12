@@ -310,20 +310,93 @@
       }
     }
 
-    // ฟังก์ชันส่งข้อมูลไปยัง Google Apps Script
-    async function sendResult(event) {
+    /**
+     * ⭐️ ฟังก์ชันใหม่: ตรวจสอบข้อมูลที่จำเป็นสำหรับการคำนวณ
+     */
+    function validateCalculationInputs() {
+      const required = {
+        'อายุ': $('#age').val(),
+        'เพศ': $('input[name="sex"]:checked').val(),
+        'การสูบบุหรี่': $('input[name="smoke"]:checked').val(),
+        'เบาหวาน': $('input[name="dm"]:checked').val(),
+        'ความดันโลหิต': $('#sbp').val()
+      };
+
+      const missing = [];
+      for (const key in required) {
+        if (!required[key]) {
+          missing.push(key);
+        }
+      }
+
+      if (missing.length > 0) {
+        alert('กรุณากรอกข้อมูลต่อไปนี้ให้ครบถ้วน:\n- ' + missing.join('\n- '));
+        return false;
+      }
+      return true;
+    }
+
+    // ฟังก์ชันคำนวณ (ปรับปรุง)
+    function calculateRisk() {
+      const age   = validateInput($('#age').val(), 30, 30, 70);
+      const smoke = +$('input[name="smoke"]:checked').val();
+      const dm    = +$('input[name="dm"]:checked').val(); // ⭐️ อ่านค่า dm
+      const sbp   = validateInput($('#sbp').val(), 120, 70, 220);
+      const sex   = +$('input[name="sex"]:checked').val();
+      const useC  = +$('input[name="useCholesterol"]:checked').val() || 0;
+      const tc    = useC ? validateInput($('#tc').val(), 150, 0, 300) : NaN;
+      const wc    = validateInput($('#wc').val(), 80, 0, 200);
+      const ht    = validateInput($('#bdh').val(), 160, 0, 250);
+      const whr   = wc && ht ? wc / ht : NaN;
+
+      // ส่งค่า dm เข้าไปในสูตร
+      const [_, pr, __, cr] = TASCVDformular(age, smoke, dm, sbp, sex, tc, whr);
+      const pct = (pr * 100).toFixed(2);
+      const cls = classifyRisk(pr);
+
+      $('#risk-bar').css({ width: pct + '%', background: cls.color });
+      $('#result').html(
+        `<p>ความเสี่ยง 10 ปี: <strong>${pct}%</strong></p>` +
+        `<p>กลุ่ม: <strong style="color:${cls.color}">${cls.text}</strong></p>` +
+        `<p>เมื่อเทียบกับกลุ่มเดียวกัน: ${(cr * 100).toFixed(1)} เท่า</p>`
+      );
+      return [_, pr, __, cr];
+    }
+
+    /**
+     * ⭐️ ฟังก์ชัน Wrapper สำหรับปุ่มคำนวณ
+     */
+    function runCalculation() {
+      if (validateCalculationInputs()) {
+        calculateRisk();
+      }
+    }
+
+    /**
+     * ⭐️ ฟังก์ชัน Wrapper สำหรับปุ่มบันทึก
+     */
+    async function runSave(event) {
+      if (!validateCalculationInputs()) {
+        return;
+      }
       if (!userProfile) {
         alert('ยังไม่สามารถดึงข้อมูลผู้ใช้ได้ กรุณารอสักครู่');
         return;
       }
+      await sendResult(event);
+    }
 
+    // ฟังก์ชันส่งข้อมูล (ปรับปรุง)
+    async function sendResult(event) {
       const saveButton = event.target;
       saveButton.innerText = 'กำลังบันทึก...';
       saveButton.disabled = true;
 
-      const [_, pr] = calculateRisk(); // คำนวณค่าล่าสุด
+      const [_, pr] = calculateRisk();
       
       const formData = new URLSearchParams();
+      // เพิ่ม dm เข้าไปในข้อมูลที่จะส่ง
+      formData.append('dm', $('input[name="dm"]:checked').val() || '');
       formData.append('name', $('#name').val());
       formData.append('hn', $('#hn').val());
       formData.append('telephone', $('#phone').val());
