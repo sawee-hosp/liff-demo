@@ -1,105 +1,446 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My LIFF Profile</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f0f2f5;
-        }
-        .container {
-            padding: 20px;
-        }
-        #profile-card {
-            display: none; /* ซ่อนไว้ก่อนจนกว่าจะล็อกอินสำเร็จ */
-            background-color: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        img {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            margin-bottom: 20px;
-        }
-        h1 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-        p {
-            color: #666;
-            word-wrap: break-word;
-        }
-        #error {
-            color: #d93025;
-            font-weight: bold;
-        }
-    </style>
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>คำนวณความเสี่ยงที่จะเกิดโรคหลอดเลือดสมองและหัวใจในอีก 10 ปีข้างหน้า</title>
+
+  <!-- LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <!-- Font & jQuery -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- โค้ด CSS ทั้งหมดเหมือนเดิม -->
+  <style>
+    body {
+      font-family: "Noto Sans Thai", sans-serif;
+      font-size: 20px;
+      background: #f5f5f5;
+      padding: 16px;
+    }
+    .container {
+      max-width: 400px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    h1 {
+      font-size: 22px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .form-group, .button-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      flex: 1;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+    .form-group input[type="number"],
+    .form-group input[type="text"] {
+      flex: 2;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-family: "Noto Sans Thai", sans-serif;
+    }
+    .checkbox-group {
+      white-space: nowrap;
+      margin-bottom: 12px;
+    }
+    .checkbox-group label {
+      display: inline-block;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    .form-control {
+      width: 100%;
+      border-radius: 25px;
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      background-color: #fff;
+      appearance: none;
+      box-shadow: none;
+      font-family: "Noto Sans Thai", sans-serif;
+    }
+    .form-control:hover, .form-control:focus {
+      border-color: #007BFF;
+      outline: none;
+    }
+    button {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      font-size: 1rem;
+      color: white;
+      background-color: #007BFF;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: "Noto Sans Thai", sans-serif;
+      margin-top: 8px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    #patientForm {
+      display: none;
+      background: #fafafa;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      margin-bottom: 12px;
+    }
+    #user-info {
+      text-align: right;
+      margin-bottom: 8px;
+      min-height: 60px;
+    }
+    #user-info img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .risk-bar-container {
+      width: 100%;
+      background: #ddd;
+      height: 20px;
+      border-radius: 5px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+    .risk-bar {
+      height: 100%;
+      border-radius: 5px;
+      width: 0;
+      background: #ccc;
+      transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+    }
+    #result {
+      margin-top: 12px;
+      font-size: 16px;
+      line-height: 1.4;
+    }
+    .note {
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+      margin-top: 12px;
+    }
+  </style>
+
 </head>
 <body>
+  <!-- โค้ด HTML ในส่วน body ทั้งหมดเหมือนเดิม -->
+  <div class="container">
+    <h1>คำนวณความเสี่ยงที่จะเกิดโรคหลอดเลือดสมองและหัวใจในอีก 10 ปีข้างหน้า</h1>
 
-    <div class="container">
-        <div id="loading-message"><h1>กำลังเริ่มต้น LIFF...</h1></div>
+    <div id="user-info"></div>
+    <button id="loginButton" style="display:none;">Login ด้วย LINE</button>
 
-        <div id="profile-card">
-            <img id="profile-picture" src="">
-            <h1 id="display-name"></h1>
-            <p><strong>User ID:</strong><br><span id="user-id"></span></p>
-        </div>
-
-        <div id="error-message"></div>
+    <div class="form-group">
+      <label for="status">Line ที่ใช้ประเมินเป็นของใคร</label>
+      <select id="status" class="form-control">
+        <option>ประเมินตัวเอง</option>
+        <option>ญาติ/ผู้ดูแลผู้ป่วย</option>
+        <option>จนท.สาธารณสุข</option>
+        <option>อสม.สโตรก/ผู้นำชุมชน</option>
+      </select>
     </div>
 
-    <script>
-        // ==========================================
-        //  สำคัญ: แก้ไข LIFF ID ของคุณตรงนี้
-        // ==========================================
-        const MY_LIFF_ID = '2005789397-pklo1yJP'; // <-- ใส่ LIFF ID ของคุณในเครื่องหมาย ' '
+    <button onclick="toggleForm()">สำหรับผู้ป่วย รพ.สวี คลิก</button>
+    <div id="patientForm">
+      <div class="form-group">
+        <label for="hn">HN (เลขโรงพยาบาล 9 หลัก)</label>
+        <input type="number" id="hn" placeholder="#########">
+      </div>
+      <div class="form-group">
+        <label>หมู่ที่ / ตำบล</label>
+        <select id="moo" class="form-control" onchange="updateAddressAndHospital()">
+          <option>1</option><option>2</option><option>3</option><option>4</option>
+          <option>5</option><option>6</option><option>7</option><option>8</option>
+          <option>9</option><option>10</option><option>11</option><option>12</option>
+          <option>13</option><option>14</option><option>15</option><option>16</option>
+          <option>17</option><option>18</option><option>19</option>
+        </select>
+        <select id="tambon" class="form-control" onchange="updateAddressAndHospital()">
+          <option value="" selected>โปรดเลือก</option>
+          <option>ท่าหิน</option><option>ด่านสวี</option><option>เขาทะลุ</option>
+          <option>เขาค่าย</option><option>ปากแพรก</option><option>สวี</option>
+          <option>นาสัก</option><option>ทุ่งระยะ</option><option>วิสัยใต้</option>
+          <option>ครน</option><option>นาโพธิ์</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="hospital">รพ.สต.</label>
+        <input type="text" id="hospital" readonly>
+      </div>
+      <div class="checkbox-group">
+        <label>โรคประจำตัว:</label><br>
+        <label><input type="checkbox" name="ud" value="เคยเป็นโรคหลอดเลือดสมอง"> เคยเป็นโรคหลอดเลือดสมอง</label>
+        <label><input type="checkbox" name="ud" value="โรคความดันโลหิตสูง"> โรคความดันโลหิตสูง</label>
+        <label><input type="checkbox" name="ud" value="โรคเบาหวาน"> โรคเบาหวาน</label>
+        <label><input type="checkbox" name="ud" value="โรคหัวใจ"> โรคหัวใจ</label>
+        <label><input type="checkbox" name="ud" value="โรคไขมันในเลือดสูง"> โรคไขมันในเลือดสูง</label><br>
+        <label><input type="checkbox" name="ud" value="โรคไตเรื้อรัง"> โรคไตเรื้อรัง</label>
+        <label><input type="checkbox" name="ud" value="โรคหอบหืด"> โรคหอบหืด</label>
+      </div>
+      <div class="checkbox-group">
+        <label>หากมีอาการสโตรก ใครสามารถนำท่านมารพ.ได้บ้าง:</label><br>
+        <label><input type="checkbox" name="help" value="มีรถส่วนตัว"> มีรถส่วนตัว</label>
+        <label><input type="checkbox" name="help" value="ญาติ/คนบ้านเดียวกัน"> ญาติ/คนบ้านเดียวกัน</label>
+        <label><input type="checkbox" name="help" value="เพื่อนบ้าน"> เพื่อนบ้าน</label><br>
+        <label><input type="checkbox" name="help" value="อสม."> อสม.</label>
+        <label><input type="checkbox" name="help" value="ผู้นำชุมชน"> ผู้นำชุมชน</label>
+        <label><input type="checkbox" name="help" value="รถกู้ชีพ/รถฉุกเฉิน"> รถกู้ชีพ/รถฉุกเฉิน</label><br>
+        <label><input type="checkbox" name="help" value="รถรับจ้าง"> รถรับจ้าง</label>
+        <label><input type="checkbox" name="help" value="ไม่มี"> ไม่มี</label>
+      </div>
+    </div>
 
-        /**
-         * ฟังก์ชันหลักในการทำงาน
-         */
-        async function main() {
-            try {
-                // 2. เริ่มต้น LIFF
-                await liff.init({ liffId: MY_LIFF_ID });
+    <form oninput="calculateRisk()">
+      <div class="form-group">
+        <label for="name">ชื่อ:</label>
+        <input type="text" id="name" placeholder="โปรดระบุ">
+      </div>
+      <div class="form-group">
+        <label for="phone">เบอร์โทรศัพท์:</label>
+        <input type="text" id="phone" placeholder="ระบุหรือไม่ก็ได้">
+      </div>
+      <div class="form-group">
+        <label for="age">อายุ:</label>
+        <input type="number" id="age" min="30" max="70" required>
+      </div>
+      <div class="form-group">
+        <label>เพศ:</label>
+        <label><input type="radio" name="sex" value="0" required> หญิง</label>
+        <label><input type="radio" name="sex" value="1" required> ชาย</label>
+      </div>
+      <div class="form-group">
+        <label>สูบบุหรี่:</label>
+        <label><input type="radio" name="smoke" value="0" required> ไม่สูบ</label>
+        <label><input type="radio" name="smoke" value="1" required> สูบ</label>
+      </div>
+      <div class="form-group">
+        <label for="sbp">ความดันโลหิต (บน):</label>
+        <input type="number" id="sbp" min="70" max="220" required>
+      </div>
+      <div class="form-group">
+        <label>ใช้ผล Cholesterol:</label>
+        <label><input type="radio" name="useCholesterol" value="1" required onclick="$('#tc').show()"> ใช้</label>
+        <label><input type="radio" name="useCholesterol" value="0" required onclick="$('#tc').hide()"> ไม่ใช้</label>
+      </div>
+      <div class="form-group" id="tc" style="display:none;">
+        <label for="tc">Cholesterol:</label>
+        <input type="number" id="tc" min="0" max="300">
+      </div>
+      <div class="form-group">
+        <label for="wc">รอบเอว (ซม.):</label>
+        <input type="number" id="wc" min="0" max="200">
+      </div>
+      <div class="form-group">
+        <label for="bdh">ส่วนสูง (ซม.):</label>
+        <input type="number" id="bdh" min="0" max="250">
+      </div>
+    </form>
 
-                // 3. ตรวจสอบสถานะการล็อกอิน
-                if (!liff.isLoggedIn()) {
-                    // 4. ถ้ายังไม่ล็อกอิน ให้เปิดหน้าล็อกอินทันที
-                    document.getElementById('loading-message').innerText = 'กรุณาล็อกอิน...';
-                    liff.login(); 
-                } else {
-                    // 5. ถ้าล็อกอินแล้ว ให้ดึงข้อมูลโปรไฟล์
-                    document.getElementById('loading-message').style.display = 'none';
-                    const profile = await liff.getProfile();
+    <div class="risk-bar-container">
+      <div id="risk-bar" class="risk-bar"></div>
+    </div>
+    <div id="result"></div>
 
-                    // 6. แสดงผลข้อมูล
-                    document.getElementById('profile-picture').src = profile.pictureUrl;
-                    document.getElementById('display-name').innerText = profile.displayName;
-                    document.getElementById('user-id').innerText = profile.userId;
-                    document.getElementById('profile-card').style.display = 'block';
-                }
-            } catch (error) {
-                // หากเกิดข้อผิดพลาด
-                document.getElementById('loading-message').style.display = 'none';
-                document.getElementById('error-message').innerText = `เกิดข้อผิดพลาด: ${error.message}`;
-            }
+    <button onclick="calculateRisk()">คำนวณความเสี่ยง</button>
+    <button id="saveButton" onclick="sendResult(event)">บันทึกประวัติ</button>
+
+    <p class="note">
+      PDPA: รพ.สวีใช้ข้อมูล Line, คำตอบ และที่อยู่ของท่านในการประมวลผล<br>
+      "สวีรู้ทันสโตรก" จัดทำโดยทีมดูแลผู้ป่วยโรคหลอดเลือดสมอง รพ.สวี จ.ชุมพร
+    </p>
+  </div>
+
+  <script>
+    // ========================================================
+    // ส่วนของ JAVASCRIPT ที่ปรับปรุงใหม่
+    // ========================================================
+
+    // ====== CONFIGURATION ======
+    // คุณต้องใส่ค่า 2 ตัวนี้ด้วยตัวเอง
+    const LIFF_ID = '2005789397-pklo1yJP'; // 1. ใส่ LIFF ID ของคุณที่นี่
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbyOGwvmHse-JGP4CDTuufONjBtogQFKiTh0Y8tzUKmNwNASHXyxJi6A8s6EHFKKqyyJ/exec'; // 2. ใส่ URL ของ Web App ที่ได้จากการ Deploy
+
+    let userProfile = null;
+
+    // ฟังก์ชันเริ่มต้น: บังคับล็อกอินและดึงโปรไฟล์
+    async function initializeLiff() {
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return; // หยุดรอการ redirect
         }
+        await getUserProfile();
+      } catch (e) {
+        alert(`LIFF init failed: ${e.message}`);
+      }
+    }
 
-        // 7. เรียกใช้งานฟังก์ชันหลักหลังจากหน้าเว็บโหลดเสร็จ
-        document.addEventListener('DOMContentLoaded', main);
-    </script>
+    // ฟังก์ชันดึงโปรไฟล์ผู้ใช้
+    async function getUserProfile() {
+      try {
+        userProfile = await liff.getProfile();
+        document.getElementById('user-info').innerHTML = `<img src="${userProfile.pictureUrl}" alt="รูปประจำตัว">`;
+        if(document.getElementById('loginButton')) {
+          document.getElementById('loginButton').style.display = 'none';
+        }
+      } catch (e) {
+        alert(`Failed to get profile: ${e.message}`);
+      }
+    }
 
+    // ฟังก์ชันส่งข้อมูลไปยัง Google Apps Script
+    async function sendResult(event) {
+      if (!userProfile) {
+        alert('ยังไม่สามารถดึงข้อมูลผู้ใช้ได้ กรุณารอสักครู่');
+        return;
+      }
+
+      const saveButton = event.target;
+      saveButton.innerText = 'กำลังบันทึก...';
+      saveButton.disabled = true;
+
+      const [_, pr] = calculateRisk(); // คำนวณค่าล่าสุด
+      
+      const formData = new URLSearchParams();
+      formData.append('name', $('#name').val());
+      formData.append('hn', $('#hn').val());
+      formData.append('telephone', $('#phone').val());
+      formData.append('gender', $('input[name="sex"]:checked').val() || '');
+      formData.append('age', $('#age').val());
+      formData.append('smoke', $('input[name="smoke"]:checked').val() || '');
+      formData.append('sbp', $('#sbp').val());
+      formData.append('cholesterol', $('#tc').is(':visible') ? $('#tc').val() : '');
+      formData.append('waist', $('#wc').val());
+      formData.append('height', $('#bdh').val());
+      formData.append('thai_cv_risk_score', (pr * 100).toFixed(2));
+      formData.append('risk_group', classifyRisk(pr).text);
+      formData.append('userId', userProfile.userId);
+      formData.append('displayName', userProfile.displayName);
+      formData.append('pictureUrl', userProfile.pictureUrl);
+
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          mode: 'no-cors', // สำคัญ: ป้องกันปัญหา CORS กับ Google Apps Script
+          body: formData,
+        });
+        // เนื่องจากใช้ no-cors เราจะไม่สามารถอ่าน response.json() ได้
+        // เราจะถือว่าถ้า fetch ผ่านคือสำเร็จ
+        alert('บันทึกข้อมูลสำเร็จ');
+      } catch (error) {
+        alert(`การบันทึกข้อมูลล้มเหลว: ${error.message}`);
+      } finally {
+        saveButton.innerText = 'บันทึกประวัติ';
+        saveButton.disabled = false;
+      }
+    }
+
+    // เรียกใช้ฟังก์ชันเริ่มต้นเมื่อหน้าเว็บโหลด
+    document.addEventListener('DOMContentLoaded', initializeLiff);
+
+    // ========================================================
+    // ฟังก์ชันเดิมจากโปรเจกต์ของคุณ (ไม่ต้องแก้ไข)
+    // ========================================================
+    function toggleForm() {
+      const f = document.getElementById('patientForm');
+      f.style.display = f.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function updateAddressAndHospital() {
+      const moo = $('#moo').val(), tb = $('#tambon').val();
+      $('#address').val(`หมู่ที่ ${moo} ต.${tb} อ.สวี จ.ชุมพร`);
+      const hospitals = {
+        "ท่าหิน":"รพ.สต.ท่าหิน","ด่านสวี":"รพ.สต.ด่านสวี","เขาทะลุ":"รพ.สต.เขาทะลุ",
+        "เขาค่าย":"รพ.สต.เขาค่าย","ปากแพรก":"รพ.สต.ปากแพรก","สวี":"รพ.สต.สวี",
+        "นาสัก":{"1":"รพ.สต.บ้านแก่งกระทั่ง","2":"รพ.สต.นาสัก"},
+        "ทุ่งระยะ":{"1":"รพ.สต.ทุ่งระยะ","5":"รพ.สต.บ้านคสองน้อย"},
+        "วิสัยใต้":{"2":"รพ.สต.วิสัยใต้"},
+        "ครน":{"1":"รพ.สต.ครน","9":"รพ.สต.บ้านควนสามัคคี"},
+        "นาโพธิ์":"รพ.สต.สวี (นาโพธิ์)"
+      };
+      let hosp = hospitals[tb];
+      if (typeof hosp === 'object') hosp = hosp[moo] || '';
+      $('#hospital').val(hosp || 'ไม่พบข้อมูล');
+    }
+
+    function classifyRisk(r) {
+      if (r < 0.1) return { text: "เสี่ยงน้อย", color: "#00cc00" };
+      if (r < 0.2) return { text: "เสี่ยงปานกลาง", color: "#e6e600" };
+      if (r <= 0.3) return { text: "เสี่ยงสูง", color: "#ff6600" };
+      if (r <= 0.4) return { text: "เสี่ยงสูงมาก", color: "#ff0000" };
+      return { text: "เสี่ยงวิกฤต", color: "#b30000" };
+    }
+
+    function validateInput(v, def, min, max) {
+      let x = parseFloat(v);
+      if (isNaN(x)) return def;
+      return Math.max(min, Math.min(max, x));
+    }
+
+    function TASCVDformular(age, smoke, dm, sbp, sex, tc, whr) {
+      const sur = 0.964588;
+      let fs, cs, pr, cr;
+      const compSBP = sex?132:115, compWHR = sex?0.58125:0.52667;
+      if (!isNaN(tc)) {
+        fs = 0.08183*age + 0.39499*sex + 0.02084*sbp + 0.69974*dm + 0.00212*tc + 0.41916*smoke;
+        pr = 1 - Math.pow(sur, Math.exp(fs - 7.04423));
+        cs = 0.08183*age + 0.39499*sex + 0.02084*compSBP + 0.00212*200;
+        cr = 1 - Math.pow(sur, Math.exp(cs - 7.04423));
+      } else {
+        fs = 0.079*age + 0.128*sex + 0.01935*sbp + 0.58454*dm + 3.51257*whr + 0.459*smoke;
+        pr = 1 - Math.pow(sur, Math.exp(fs - 7.712325));
+        cs = 0.079*age + 0.128*sex + 0.01935*compSBP + 3.51257*compWHR;
+        cr = 1 - Math.pow(sur, Math.exp(cs - 7.712325));
+      }
+      return [fs, pr, cs, cr];
+    }
+
+    function calculateRisk() {
+      const age   = validateInput($('#age').val(),30,30,70);
+      const smoke = +$('input[name="smoke"]:checked').val()||0;
+      const dm    = +$('input[name="dm"]:checked').val()||0;
+      const sbp   = validateInput($('#sbp').val(),120,70,220);
+      const sex   = +$('input[name="sex"]:checked').val()||0;
+      const useC  = +$('input[name="useCholesterol"]:checked').val()||0;
+      const tc    = useC? validateInput($('#tc').val(),150,0,300): NaN;
+      const wc    = validateInput($('#wc').val(),80,0,200);
+      const ht    = validateInput($('#bdh').val(),160,0,250);
+      const whr   = wc&&ht? wc/ht: NaN;
+
+      const [_, pr, __, cr] = TASCVDformular(age,smoke,dm,sbp,sex,tc,whr);
+      const pct = (pr*100).toFixed(2);
+      const cls = classifyRisk(pr);
+
+      $('#risk-bar').css({ width: pct+'%', background: cls.color });
+      $('#result').html(`
+        <p>ความเสี่ยง 10 ปี: <strong>${pct}%</strong></p>
+        <p>กลุ่ม: <strong style="color:${cls.color}">${cls.text}</strong></p>
+        <p>เมื่อเทียบกับกลุ่มเดียวกัน: ${(cr*100).toFixed(1)} เท่า</p>
+      `);
+      return [_, pr, __, cr];
+    }
+  </script>
 </body>
 </html>
