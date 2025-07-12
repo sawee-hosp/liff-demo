@@ -23,7 +23,7 @@
         #result-container { margin-top: 20px; padding: 15px; border-top: 1px solid #eee; display: none; }
         #result-container h2 { font-size: 18px; margin-top: 0; color: #007BFF; }
         #patientForm { display: none; border: 1px dashed #ccc; padding: 15px; margin-top: 15px; border-radius: 8px; }
-        #patientForm .checkbox-group label { display: block; margin-bottom: 5px; white-space: normal; } /* ⭐️ ทำให้ checkbox ตัดคำ */
+        #patientForm .checkbox-group label { display: block; margin-bottom: 5px; white-space: normal; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
         .modal-content { background-color: #fefefe; margin: 40% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 300px; border-radius: 10px; text-align: center; }
     </style>
@@ -42,7 +42,7 @@
                 <label for="status">ประเมินให้ใคร:</label>
                 <div class="input-wrapper">
                     <select id="status" class="form-control">
-                        <option value="ประเมินตัวเอง">ประเมินตัวเอง</option>
+                        <option value="ประเมินตัวเอง" selected>ประเมินตัวเอง</option>
                         <option value="ญาติ/ผู้ดูแลผู้ป่วย">ญาติ/ผู้ดูแลผู้ป่วย</option>
                         <option value="จนท.สาธารณสุข">จนท.สาธารณสุข</option>
                         <option value="อสม.สโตรก/ผู้นำชุมชน">อสม.สโตรก/ผู้นำชุมชน</option>
@@ -74,8 +74,17 @@
                 <div class="form-group">
                     <label>หมู่ที่ / ตำบล:</label>
                     <div class="input-wrapper">
-                        <select id="village" class="form-control" style="margin-right: 5px;"><option value="">หมู่ที่</option></select>
-                        <select id="district" class="form-control"><option value="">ตำบล</option></select>
+                        <select id="village" class="form-control" style="margin-right: 5px;">
+                            <option value="">หมู่ที่</option>
+                            <!-- ตัวเลือกหมู่ที่จะถูกเติมโดย JavaScript -->
+                        </select>
+                        <select id="district" class="form-control">
+                            <option value="">ตำบล</option>
+                            <option>ท่าหิน</option><option>ด่านสวี</option><option>เขาทะลุ</option>
+                            <option>เขาค่าย</option><option>ปากแพรก</option><option>สวี</option>
+                            <option>นาสัก</option><option>ทุ่งระยะ</option><option>วิสัยใต้</option>
+                            <option>ครน</option><option>นาโพธิ์</option>
+                        </select>
                     </div>
                 </div>
                 <div class="form-group">
@@ -89,15 +98,22 @@
                         <label><input type="checkbox" name="ud" value="ความดันสูง"> ความดันสูง</label>
                         <label><input type="checkbox" name="ud" value="เบาหวาน"> เบาหวาน</label>
                         <label><input type="checkbox" name="ud" value="โรคหัวใจ"> โรคหัวใจ</label>
+                        <label><input type="checkbox" name="ud" value="ไขมันในเลือดสูง"> ไขมันในเลือดสูง</label>
+                        <label><input type="checkbox" name="ud" value="โรคไตเรื้อรัง"> โรคไตเรื้อรัง</label>
+                        <label><input type="checkbox" name="ud" value="โรคหอบหืด"> โรคหอบหืด</label>
                     </div></div>
                 </div>
                  <div class="form-group checkbox-group">
-                    <label>คนช่วยเหลือ:</label>
+                    <label>คนช่วยเหลือเมื่อมีอาการ:</label>
                     <div class="input-wrapper"><div>
                         <label><input type="checkbox" name="help" value="รถส่วนตัว"> รถส่วนตัว</label>
                         <label><input type="checkbox" name="help" value="ญาติ"> ญาติ</label>
                         <label><input type="checkbox" name="help" value="เพื่อนบ้าน"> เพื่อนบ้าน</label>
+                        <label><input type="checkbox" name="help" value="อสม."> อสม.</label>
+                        <label><input type="checkbox" name="help" value="ผู้นำชุมชน"> ผู้นำชุมชน</label>
                         <label><input type="checkbox" name="help" value="รถฉุกเฉิน"> รถฉุกเฉิน</label>
+                        <label><input type="checkbox" name="help" value="รถรับจ้าง"> รถรับจ้าง</label>
+                        <label><input type="checkbox" name="help" value="ไม่มี"> ไม่มี</label>
                     </div></div>
                 </div>
             </div>
@@ -159,9 +175,6 @@
         </form>
 
         <div id="result-container">
-            <div class="risk-bar-container">
-                <div id="risk-bar" class="risk-bar"></div>
-            </div>
             <div id="result-text"></div>
         </div>
 
@@ -193,7 +206,13 @@
             });
             $('input[name="isSawiPatient"]').on('change', toggleSawiPatientForm);
             $('input[name="useCholesterol"]').on('change', toggleMeasurementFields);
+            $('#village, #district').on('change', updateAddressAndHospital);
             $('#modal-ok-btn').on('click', () => liff.closeWindow());
+            
+            // // เติมตัวเลือก "หมู่ที่"
+            for (let i = 1; i <= 19; i++) {
+                $('#village').append(`<option value="${i}">${i}</option>`);
+            }
         });
 
         async function initializeLiff() {
@@ -218,6 +237,23 @@
             $('#tc_group').toggle(useCholesterol);
             $('#body_measure_group').toggle(!useCholesterol);
             $('.calc-input').trigger('change');
+        }
+
+        function updateAddressAndHospital() {
+            const moo = $('#village').val();
+            const tb = $('#district').val();
+            const hospitals = {
+                "ท่าหิน":"รพ.สต.ท่าหิน","ด่านสวี":"รพ.สต.ด่านสวี","เขาทะลุ":"รพ.สต.เขาทะลุ",
+                "เขาค่าย":"รพ.สต.เขาค่าย","ปากแพรก":"รพ.สต.ปากแพรก","สวี":"รพ.สต.สวี",
+                "นาสัก":{"1":"รพ.สต.บ้านแก่งกระทั่ง","2":"รพ.สต.นาสัก"},
+                "ทุ่งระยะ":{"1":"รพ.สต.ทุ่งระยะ","5":"รพ.สต.บ้านคสองน้อย"},
+                "วิสัยใต้":{"2":"รพ.สต.วิสัยใต้"},
+                "ครน":{"1":"รพ.สต.ครน","9":"รพ.สต.บ้านควนสามัคคี"},
+                "นาโพธิ์":"รพ.สต.สวี (นาโพธิ์)"
+            };
+            let hosp = hospitals[tb];
+            if (typeof hosp === 'object') hosp = hosp[moo] || '';
+            $('#pcu').val(hosp || 'ไม่พบข้อมูล');
         }
 
         function validateCalculationInputs(showAlert = true) {
@@ -247,9 +283,9 @@
             }
             return true;
         }
-
+        
+        // // ฟังก์ชันคำนวณ, แสดงผล, และสร้างข้อแนะนำ (เหมือนเดิม)
         function calculateRisk() {
-            // // ไม่ใช้ค่า default อีกต่อไป จะใช้ค่าจริงจากฟอร์มเท่านั้น
             const age = parseFloat($('#age').val());
             const smoke = +$('input[name="smoke"]:checked').val();
             const dm = +$('input[name="dm"]:checked').val();
@@ -265,7 +301,7 @@
             const [_, pr, __, cr] = TASCVDformular(age, smoke, dm, sbp, sex, tc, whr);
             const pct = (pr * 100).toFixed(2);
             const cls = classifyRisk(pr);
-            const compareRatio = (cr > 0 && pr > 0) ? (pr / cr).toFixed(1) : 0;
+            const compareRatio = (cr > 0 && pr > 0) ? (pr / cr).toFixed(1) : "N/A";
 
             return { riskPercent: pct, riskGroup: cls.text, riskColor: cls.color, compareRatio, smoke, sbp, dm, wc, sex };
         }
@@ -279,7 +315,6 @@
                 <p><strong>ข้อแนะนำเบื้องต้น</strong></p>
                 <p style="white-space: pre-wrap;">${suggestionText}</p>
             `;
-            $('#risk-bar').css({ width: riskData.riskPercent + '%', background: riskData.riskColor });
             $('#result-text').html(resultHtml);
             $('#result-container').show();
         }
@@ -350,13 +385,11 @@
         }
 
         function TASCVDformular(age, smoke, dm, sbp, sex, tc, whr) {
-            // // สูตรคำนวณเหมือนเดิม แต่ต้องแน่ใจว่าค่าที่เข้ามาเป็นตัวเลขที่ถูกต้อง
             const sur_root = 0.964588;
             let full_score = 0, compare_score = 0, predicted_risk = 0, compare_risk = 0;
             
             const compare_sbp = sex == 1 ? (age > 60 ? 132 : 120) : (age > 60 ? 130 : 115);
             const compare_whr = sex == 1 ? 0.58125 : 0.52667;
-            const compare_wc = sex == 1 ? 93 : 79;
 
             if (!isNaN(tc)) {
                 full_score = (0.08183 * age) + (0.39499 * sex) + (0.02084 * sbp) + (0.69974 * dm) + (0.00212 * tc) + (0.41916 * smoke);
@@ -374,13 +407,14 @@
             return [full_score, predicted_risk, compare_score, compare_risk];
         }
 
+        // // ⭐️ อัปเดตฟังก์ชันจัดกลุ่มความเสี่ยง 5 ระดับ
         function classifyRisk(r) {
             const p = r * 100;
-            if (p < 10) return { text: "เสี่ยงต่ำ", color: "#28a745" };
-            if (p < 20) return { text: "เสี่ยงปานกลาง", color: "#ffc107" };
-            if (p < 30) return { text: "เสี่ยงสูง", color: "#fd7e14" };
-            if (p < 40) return { text: "เสี่ยงสูงมาก", color: "#dc3545" };
-            return { text: "เสี่ยงอันตราย", color: "#8B0000" };
+            if (p < 10) return { text: "เสี่ยงต่ำ", color: "#28a745" }; // Green
+            if (p < 20) return { text: "เสี่ยงปานกลาง", color: "#ffc107" }; // Yellow
+            if (p < 30) return { text: "เสี่ยงสูง", color: "#fd7e14" }; // Orange
+            if (p < 40) return { text: "เสี่ยงสูงมาก", color: "#dc3545" }; // Red
+            return { text: "เสี่ยงอันตราย", color: "#8B0000" }; // Dark Red
         }
     </script>
 </body>
