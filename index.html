@@ -1,12 +1,105 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My LIFF App</title>
+    <title>My LIFF Profile</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        .container {
+            padding: 20px;
+        }
+        #profile-card {
+            display: none; /* ซ่อนไว้ก่อนจนกว่าจะล็อกอินสำเร็จ */
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        p {
+            color: #666;
+            word-wrap: break-word;
+        }
+        #error {
+            color: #d93025;
+            font-weight: bold;
+        }
+    </style>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
-    <h1>Hello, LIFF!</h1>
-    <p>This is my first LIFF project on GitHub.</p>
+
+    <div class="container">
+        <div id="loading-message"><h1>กำลังเริ่มต้น LIFF...</h1></div>
+
+        <div id="profile-card">
+            <img id="profile-picture" src="">
+            <h1 id="display-name"></h1>
+            <p><strong>User ID:</strong><br><span id="user-id"></span></p>
+        </div>
+
+        <div id="error-message"></div>
+    </div>
+
+    <script>
+        // ==========================================
+        //  สำคัญ: แก้ไข LIFF ID ของคุณตรงนี้
+        // ==========================================
+        const MY_LIFF_ID = '2005789397-pklo1yJP'; // <-- ใส่ LIFF ID ของคุณในเครื่องหมาย ' '
+
+        /**
+         * ฟังก์ชันหลักในการทำงาน
+         */
+        async function main() {
+            try {
+                // 2. เริ่มต้น LIFF
+                await liff.init({ liffId: MY_LIFF_ID });
+
+                // 3. ตรวจสอบสถานะการล็อกอิน
+                if (!liff.isLoggedIn()) {
+                    // 4. ถ้ายังไม่ล็อกอิน ให้เปิดหน้าล็อกอินทันที
+                    document.getElementById('loading-message').innerText = 'กรุณาล็อกอิน...';
+                    liff.login(); 
+                } else {
+                    // 5. ถ้าล็อกอินแล้ว ให้ดึงข้อมูลโปรไฟล์
+                    document.getElementById('loading-message').style.display = 'none';
+                    const profile = await liff.getProfile();
+
+                    // 6. แสดงผลข้อมูล
+                    document.getElementById('profile-picture').src = profile.pictureUrl;
+                    document.getElementById('display-name').innerText = profile.displayName;
+                    document.getElementById('user-id').innerText = profile.userId;
+                    document.getElementById('profile-card').style.display = 'block';
+                }
+            } catch (error) {
+                // หากเกิดข้อผิดพลาด
+                document.getElementById('loading-message').style.display = 'none';
+                document.getElementById('error-message').innerText = `เกิดข้อผิดพลาด: ${error.message}`;
+            }
+        }
+
+        // 7. เรียกใช้งานฟังก์ชันหลักหลังจากหน้าเว็บโหลดเสร็จ
+        document.addEventListener('DOMContentLoaded', main);
+    </script>
+
 </body>
 </html>
