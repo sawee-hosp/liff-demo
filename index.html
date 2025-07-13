@@ -444,7 +444,7 @@
             };
 
             try {
-                const response = await fetch("https://script.google.com/macros/s/AKfycbyOGwvmHse-JGP4CDTuufONjBtogQFKiTh0Y8tzUKmNwNASHXyxJi6A8s6EHFKKqyyJ/exec", {
+                const response = await fetch(GAS_URL, {
                     method: 'POST',
                     redirect: "follow",
                     body: JSON.stringify(dataToSend),
