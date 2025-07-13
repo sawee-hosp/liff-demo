@@ -16,16 +16,38 @@
         .form-group .input-wrapper { flex: 3; display: flex; }
         .form-group input[type="number"], .form-group input[type="text"], .form-group select { width: 100%; padding: 10px; font-size: 1rem; border-radius: 10px; border: 1px solid #ccc; font-family: "Noto Sans Thai", sans-serif; }
         .form-group input[readonly] { background-color: #e9ecef; cursor: not-allowed; }
-        .radio-group label { margin-right: 15px; display: flex; align-items: center; }
+        .radio-group label { margin-right: 15px; display: flex; align-items: center; cursor: pointer; }
         .radio-group input { margin-right: 5px; }
         button { display: block; width: 100%; padding: 15px; font-size: 1rem; color: white; background-color: #007BFF; border: none; border-radius: 10px; cursor: pointer; font-family: "Noto Sans Thai", sans-serif; margin-top: 8px; }
         button:disabled { background-color: #cccccc; cursor: not-allowed; }
         #result-container { margin-top: 20px; padding: 15px; border-top: 1px solid #eee; display: none; }
-        #result-container h2 { font-size: 18px; margin-top: 0; color: #007BFF; }
         #patientForm { display: none; border: 1px dashed #ccc; padding: 15px; margin-top: 15px; border-radius: 8px; }
         #patientForm .checkbox-group label { display: block; margin-bottom: 5px; white-space: normal; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
         .modal-content { background-color: #fefefe; margin: 40% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 300px; border-radius: 10px; text-align: center; }
+        
+        /* ⭐️ CSS สำหรับแถบแสดงผลลัพธ์แบบใหม่ ⭐️ */
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e9ecef; /* พื้นหลังสีเทา */
+            border-radius: 8px;
+            position: relative;
+            height: 30px;
+            margin: 20px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+            transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+            width: 0%; /* เริ่มต้นที่ 0% */
+        }
     </style>
 </head>
 <body>
@@ -74,10 +96,7 @@
                 <div class="form-group">
                     <label>หมู่ที่ / ตำบล:</label>
                     <div class="input-wrapper">
-                        <select id="village" class="form-control" style="margin-right: 5px;">
-                            <option value="">หมู่ที่</option>
-                            <!-- ตัวเลือกหมู่ที่จะถูกเติมโดย JavaScript -->
-                        </select>
+                        <select id="village" class="form-control" style="margin-right: 5px;"><option value="">หมู่ที่</option></select>
                         <select id="district" class="form-control">
                             <option value="">ตำบล</option>
                             <option>ท่าหิน</option><option>ด่านสวี</option><option>เขาทะลุ</option>
@@ -174,7 +193,11 @@
             </div>
         </form>
 
+        <!-- ⭐️ โครงสร้าง HTML ใหม่สำหรับแสดงผลลัพธ์ ⭐️ -->
         <div id="result-container">
+            <div class="progress-bar-container">
+                <div id="risk-bar" class="progress-bar"></div>
+            </div>
             <div id="result-text"></div>
         </div>
 
@@ -209,7 +232,6 @@
             $('#village, #district').on('change', updateAddressAndHospital);
             $('#modal-ok-btn').on('click', () => liff.closeWindow());
             
-            // // เติมตัวเลือก "หมู่ที่"
             for (let i = 1; i <= 19; i++) {
                 $('#village').append(`<option value="${i}">${i}</option>`);
             }
@@ -231,14 +253,15 @@
             const isSawiPatient = $('input[name="isSawiPatient"]:checked').val() === '1';
             $('#patientForm').toggle(isSawiPatient);
         }
-
+        
         function toggleMeasurementFields() {
             const useCholesterol = $('input[name="useCholesterol"]:checked').val() === '1';
             $('#tc_group').toggle(useCholesterol);
             $('#body_measure_group').toggle(!useCholesterol);
+            // เมื่อสลับ ให้ลองคำนวณใหม่
             $('.calc-input').trigger('change');
         }
-
+        
         function updateAddressAndHospital() {
             const moo = $('#village').val();
             const tb = $('#district').val();
@@ -278,13 +301,14 @@
             const missingFields = Object.keys(inputs).filter(key => !inputs[key]);
 
             if (missingFields.length > 0) {
-                if (showAlert) alert('กรุณากรอกข้อมูลต่อไปนี้ให้ครบถ้วน:\n- ' + missingFields.join('\n- '));
+                if (showAlert) {
+                    alert('กรุณากรอกข้อมูลต่อไปนี้ให้ครบถ้วน:\n- ' + missingFields.join('\n- '));
+                }
                 return false;
             }
             return true;
         }
         
-        // // ฟังก์ชันคำนวณ, แสดงผล, และสร้างข้อแนะนำ (เหมือนเดิม)
         function calculateRisk() {
             const age = parseFloat($('#age').val());
             const smoke = +$('input[name="smoke"]:checked').val();
@@ -306,6 +330,9 @@
             return { riskPercent: pct, riskGroup: cls.text, riskColor: cls.color, compareRatio, smoke, sbp, dm, wc, sex };
         }
 
+        /**
+         * ⭐️ ฟังก์ชันแสดงผลลัพธ์ที่ปรับปรุงใหม่ ⭐️
+         */
         function displayResults(riskData) {
             const suggestionText = generateSuggestionText(riskData);
             const resultHtml = `
@@ -315,6 +342,15 @@
                 <p><strong>ข้อแนะนำเบื้องต้น</strong></p>
                 <p style="white-space: pre-wrap;">${suggestionText}</p>
             `;
+            
+            // // อัปเดตแถบเปอร์เซ็นต์
+            $('#risk-bar')
+                .css({
+                    'width': riskData.riskPercent + '%',
+                    'background-color': riskData.riskColor
+                })
+                .text(riskData.riskPercent + '%'); // // แสดงตัวเลขบนแถบ
+
             $('#result-text').html(resultHtml);
             $('#result-container').show();
         }
@@ -407,7 +443,6 @@
             return [full_score, predicted_risk, compare_score, compare_risk];
         }
 
-        // // ⭐️ อัปเดตฟังก์ชันจัดกลุ่มความเสี่ยง 5 ระดับ
         function classifyRisk(r) {
             const p = r * 100;
             if (p < 10) return { text: "เสี่ยงต่ำ", color: "#28a745" }; // Green
