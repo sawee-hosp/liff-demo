@@ -255,7 +255,6 @@
             } catch (e) { console.error('LIFF Init Error:', e); }
         }
 
-        // ⭐️ ฟังก์ชันใหม่: ตรวจสอบการลงทะเบียนผ่าน Fetch
         async function checkUserRegistration(userId) {
             try {
                 const response = await fetch(`${GAS_URL}?userId=${userId}`);
