@@ -63,6 +63,11 @@
             background-color: #e9ecef; 
             cursor: not-allowed; 
         }
+        /* NEW: Style for invalid input fields */
+        .input-error {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
 
         /* Radio and Checkbox Groups */
         .radio-group label, .checkbox-group label { 
@@ -125,69 +130,16 @@
             white-space: normal; 
         }
 
-        /* Modal Styles (for Success and Alerts) */
-        .modal { 
-            display: none; 
-            position: fixed; 
-            z-index: 1000; 
-            left: 0; 
-            top: 0; 
-            width: 100%; 
-            height: 100%; 
-            overflow: auto; 
-            background-color: rgba(0,0,0,0.5); 
-            -webkit-backdrop-filter: blur(5px);
-            backdrop-filter: blur(5px);
-        }
-        .modal-content { 
-            background-color: #fefefe; 
-            margin: 40% auto; 
-            padding: 20px; 
-            border: 1px solid #888; 
-            width: 85%; 
-            max-width: 320px; 
-            border-radius: 10px; 
-            text-align: center; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        .modal-content p {
-            margin-bottom: 20px;
-            white-space: pre-wrap; /* Allows line breaks in the message */
-        }
-        .modal-content h4 {
-            margin-top: 0;
-            font-weight: bold;
-        }
+        /* Modal Styles */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); }
+        .modal-content { background-color: #fefefe; margin: 40% auto; padding: 20px; border: 1px solid #888; width: 85%; max-width: 320px; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .modal-content p { margin-bottom: 20px; white-space: pre-wrap; }
+        .modal-content h4 { margin-top: 0; font-weight: bold; }
 
         /* Status and Progress Bar */
-        #registration-status { 
-            color: #28a745; 
-            font-weight: bold; 
-            text-align: center; 
-            margin-bottom: 15px; 
-            display: none; 
-        }
-        .progress-bar-container {
-            width: 100%; 
-            background-color: #e9ecef; 
-            border-radius: 8px;
-            position: relative; 
-            height: 30px; 
-            margin: 20px 0;
-        }
-        .progress-bar {
-            height: 100%; 
-            border-radius: 8px; 
-            display: flex; 
-            align-items: center;
-            justify-content: center; 
-            color: white; 
-            font-weight: bold; 
-            font-size: 1rem;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
-            transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
-            width: 0%;
-        }
+        #registration-status { color: #28a745; font-weight: bold; text-align: center; margin-bottom: 15px; display: none; }
+        .progress-bar-container { width: 100%; background-color: #e9ecef; border-radius: 8px; position: relative; height: 30px; margin: 20px 0; }
+        .progress-bar { height: 100%; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.4); transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out; width: 0%; }
     </style>
 </head>
 <body>
@@ -202,7 +154,6 @@
                 <label for="lineName">ชื่อ Line:</label>
                 <div class="input-wrapper"><input type="text" id="lineName" readonly></div>
             </div>
-            
             <div class="form-group">
                 <label for="role">ประเมินให้ใคร:</label>
                 <div class="input-wrapper">
@@ -214,10 +165,9 @@
                     </select>
                 </div>
             </div>
-
             <div class="form-group">
                 <label for="name">ชื่อผู้รับการประเมิน:</label>
-                <div class="input-wrapper"><input type="text" id="name" placeholder="เว้นว่างได้ จะใช้ชื่อไลน์แทน" class="calc-input"></div>
+                <div class="input-wrapper"><input type="text" id="name" placeholder="อยากให้เราเรียกคุณว่าอะไรดีครับ" class="calc-input"></div>
             </div>
 
             <!-- Sawi Patient Section Toggle -->
@@ -233,11 +183,11 @@
             <div id="patientForm">
                 <div class="form-group">
                     <label for="telephone">เบอร์โทรศัพท์:</label>
-                    <div class="input-wrapper"><input type="text" id="telephone" placeholder="0XXXXXXXXX"></div>
+                    <div class="input-wrapper"><input type="text" id="telephone" placeholder="ถ้าต้องการให้เราติดต่อได้"></div>
                 </div>
                 <div class="form-group">
                     <label for="hn">HN (เลข รพ.):</label>
-                    <div class="input-wrapper"><input type="text" id="hn" placeholder="กรอกเลขโรงพยาบาล 9 หลัก"></div>
+                    <div class="input-wrapper"><input type="text" id="hn" placeholder="เลขโรงพยาบาล 9 หลัก"></div>
                 </div>
                 <div class="form-group">
                     <label>หมู่ที่ / ตำบล:</label>
@@ -289,7 +239,7 @@
 
             <!-- Risk Calculation Inputs -->
             <div class="form-group">
-                <label for="age">อายุ (30-70 ปี):</label>
+                <label for="age">อายุ (ปี):</label>
                 <div class="input-wrapper"><input type="number" id="age" class="calc-input"></div>
             </div>
             <div class="form-group">
@@ -315,7 +265,7 @@
             </div>
             <div class="form-group">
                 <label for="sbp">ความดัน (ตัวบน):</label>
-                <div class="input-wrapper"><input type="number" id="sbp" class="calc-input" placeholder="70-220"></div>
+                <div class="input-wrapper"><input type="number" id="sbp" class="calc-input"></div>
             </div>
             <div class="form-group">
                 <label>มีผลเลือด Cholesterol:</label>
@@ -348,7 +298,7 @@
                 <div class="input-wrapper">
                     <label>
                         <input type="checkbox" id="pdpa" name="pdpa" value="อนุญาตให้ทีมฯ โรงพยาบาลสวี ประมวลผลข้อมูลของท่านเพื่อนำไปวิเคราะห์ความเสี่ยงการเกิดสโตรก" checked>
-                        อนุญาตให้ทีมฯ โรงพยาบาลสวี ประมวลผลข้อมูลของท่านเพื่อนำไปวิเคราะห์ความเสี่ยงการเกิดสโตรก*
+                        อนุญาตให้ทีมฯ โรงพยาบาลสวี ประมวลผลข้อมูลของคุณเพื่อนำไปวิเคราะห์ความเสี่ยงการเกิดสโตรก*
                     </label>
                 </div>
             </div>
@@ -362,22 +312,9 @@
         <button id="saveButton" onclick="runSave(event)">บันทึกประวัติ</button>
     </div>
 
-    <!-- Modal for Success Message -->
-    <div id="successModal" class="modal">
-        <div class="modal-content">
-            <p>บันทึกผลเรียบร้อยแล้ว และได้ส่งสรุปผลเข้าห้องแชท LINE ของท่าน</p>
-            <button id="modal-ok-btn">ตกลง</button>
-        </div>
-    </div>
-
-    <!-- Modal for Alert Messages -->
-    <div id="alertModal" class="modal">
-        <div class="modal-content">
-            <h4 id="alertModalTitle"></h4>
-            <p id="alertModalText"></p>
-            <button id="alertModalOkBtn">ตกลง</button>
-        </div>
-    </div>
+    <!-- Modals -->
+    <div id="successModal" class="modal"><div class="modal-content"><p>บันทึกผลเรียบร้อยแล้ว และได้ส่งสรุปผลเข้าห้องแชท LINE ของคุณ</p><button id="modal-ok-btn">ตกลง</button></div></div>
+    <div id="alertModal" class="modal"><div class="modal-content"><h4 id="alertModalTitle"></h4><p id="alertModalText"></p><button id="alertModalOkBtn">ตกลง</button></div></div>
 
     <script>
         // --- Constants and Global Variables ---
@@ -411,7 +348,7 @@
 
         function setupEventListeners() {
             $('.calc-input').on('input change', () => {
-                if (validateCalculationInputs(false)) {
+                if (validateCalculationInputs(false)) { // No alert on every input
                     const { riskData, inputs } = calculateRisk();
                     displayResults(riskData, inputs);
                 } else {
@@ -427,9 +364,7 @@
         }
 
         function populateVillageDropdown() {
-            for (let i = 1; i <= 19; i++) {
-                $('#village').append(`<option value="${i}">${i}</option>`);
-            }
+            for (let i = 1; i <= 19; i++) $('#village').append(`<option value="${i}">${i}</option>`);
         }
 
         // --- User Registration Check ---
@@ -438,18 +373,13 @@
                 const response = await fetch(`${GAS_URL}?userId=${userId}`);
                 const data = await response.json();
                 if (data.status === 'found' && data.timestamp) {
-                    $('#registration-status').html(`✔️ ท่านเคยลงทะเบียนแล้วเมื่อ ${data.timestamp}`).show();
+                    $('#registration-status').html(`✔️ คุณเคยลงทะเบียนแล้วเมื่อ ${data.timestamp}`).show();
                 }
-            } catch (error) {
-                console.error("Failed to check user registration:", error);
-            }
+            } catch (error) { console.error("Failed to check user registration:", error); }
         }
 
         // --- UI Toggling Functions ---
-        function toggleSawiPatientForm() {
-            $('#patientForm').toggle($('input[name="isSawiPatient"]:checked').val() === '1');
-        }
-
+        function toggleSawiPatientForm() { $('#patientForm').toggle($('input[name="isSawiPatient"]:checked').val() === '1'); }
         function toggleMeasurementFields() {
             const useCholesterol = $('input[name="useCholesterol"]:checked').val() === '1';
             $('#tc_group').toggle(useCholesterol);
@@ -457,10 +387,8 @@
             if(useCholesterol) $('#wc, #bdh').val(''); else $('#tc').val('');
             $('.calc-input').trigger('change');
         }
-
         function updateAddressAndHospital() {
-            const moo = $('#village').val();
-            const tb = $('#district').val();
+            const moo = $('#village').val(), tb = $('#district').val();
             const hospitals = { "ท่าหิน": "รพ.สต.ท่าหิน", "ด่านสวี": "รพ.สต.ด่านสวี", "เขาทะลุ": "รพ.สต.เขาทะลุ", "เขาค่าย": "รพ.สต.เขาค่าย", "ปากแพรก": "รพ.สต.ปากแพรก", "สวี": "รพ.สต.สวี", "นาสัก": { "1": "รพ.สต.บ้านแก่งกระทั่ง", "6": "รพ.สต.บ้านแก่งกระทั่ง", "11": "รพ.สต.บ้านแก่งกระทั่ง", "13": "รพ.สต.บ้านแก่งกระทั่ง", "18": "รพ.สต.บ้านแก่งกระทั่ง", "19": "รพ.สต.บ้านแก่งกระทั่ง", "7": "รพ.สต.บ้านไทยพัฒนา", "8": "รพ.สต.บ้านไทยพัฒนา", "9": "รพ.สต.บ้านไทยพัฒนา", "10": "รพ.สต.บ้านไทยพัฒนา", "12": "รพ.สต.บ้านไทยพัฒนา", "15": "รพ.สต.บ้านไทยพัฒนา", "16": "รพ.สต.บ้านไทยพัฒนา", "2": "รพ.สต.นาสัก", "4": "รพ.สต.นาสัก", "5": "รพ.สต.นาสัก", "14": "รพ.สต.นาสัก", "17": "รพ.สต.นาสัก" }, "ทุ่งระยะ": { "5": "รพ.สต.บ้านคสองน้อย", "6": "รพ.สต.บ้านคสองน้อย", "7": "รพ.สต.บ้านคสองน้อย", "8": "รพ.สต.บ้านคสองน้อย", "9": "รพ.สต.บ้านคสองน้อย", "10": "รพ.สต.บ้านคสองน้อย", "1": "รพ.สต.ทุ่งระยะ", "2": "รพ.สต.ทุ่งระยะ", "3": "รพ.สต.ทุ่งระยะ", "4": "รพ.สต.ทุ่งระยะ", "11": "รพ.สต.ทุ่งระยะ" }, "วิสัยใต้": { "1": "รพ.สต.บ้านดอนทราย", "3": "รพ.สต.บ้านดอนทราย", "4": "รพ.สต.บ้านดอนทราย", "8": "รพ.สต.บ้านดอนทราย", "2": "รพ.สต.วิสัยใต้", "5": "รพ.สต.วิสัยใต้", "6": "รพ.สต.วิสัยใต้", "7": "รพ.สต.วิสัยใต้", "9": "รพ.สต.วิสัยใต้", "10": "รพ.สต.วิสัยใต้" }, "ครน": { "1": "รพ.สต.ครน", "2": "รพ.สต.ครน", "3": "รพ.สต.ครน", "4": "รพ.สต.ครน", "6": "รพ.สต.ครน", "12": "รพ.สต.ครน", "9": "รพ.สต.บ้านควนสามัคคี", "10": "รพ.สต.บ้านควนสามัคคี", "13": "รพ.สต.บ้านควนสามัคคี", "14": "รพ.สต.บ้านควนสามัคคี", "5": "รพ.สต.บ้านน้ำฉา", "7": "รพ.สต.บ้านน้ำฉา", "8": "รพ.สต.บ้านน้ำฉา", "11": "รพ.สต.บ้านน้ำฉา" }, "นาโพธิ์": "รพ.สวี (นาโพธิ์)" };
             let hosp = hospitals[tb];
             if (typeof hosp === 'object') hosp = hosp[moo] || '';
@@ -474,6 +402,52 @@
             $('#alertModal').show();
         }
 
+        function validateAndStyle(selector, condition, message) {
+            const element = $(selector);
+            if (condition) {
+                element.removeClass('input-error');
+                return null;
+            } else {
+                element.addClass('input-error');
+                return message;
+            }
+        }
+
+        function validateAllInputs() {
+            $('.input-error').removeClass('input-error'); // Clear previous errors
+            const errors = [];
+            
+            // Validate calculation inputs first
+            if (!validateCalculationInputs(false)) {
+                errors.push('• กรุณากรอกข้อมูลการคำนวณ (อายุ, เพศ, ความดัน ฯลฯ) ให้ครบถ้วน');
+            }
+
+            // Validate optional but formatted fields
+            const tel = $('#telephone').val();
+            if (tel) errors.push(validateAndStyle('#telephone', /^\d{10}$/.test(tel), '• เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลัก'));
+            
+            const hn = $('#hn').val();
+            if (hn) errors.push(validateAndStyle('#hn', /^\d{9}$/.test(hn), '• HN ต้องเป็นตัวเลข 9 หลัก'));
+
+            // Detailed range checks for calculation inputs
+            const sbp = parseFloat($('#sbp').val());
+            errors.push(validateAndStyle('#sbp', !isNaN(sbp) && sbp >= 1 && sbp <= 300, '• ความดัน (ตัวบน) ต้องเป็นตัวเลข 1-300'));
+
+            if ($('input[name="useCholesterol"]:checked').val() === '0') {
+                const wc = parseFloat($('#wc').val());
+                errors.push(validateAndStyle('#wc', !isNaN(wc) && wc >= 1 && wc <= 50, '• รอบเอวต้องเป็นตัวเลข 1-50 นิ้ว'));
+                const bdh = parseFloat($('#bdh').val());
+                errors.push(validateAndStyle('#bdh', !isNaN(bdh) && bdh >= 1 && bdh <= 200, '• ส่วนสูงต้องเป็นตัวเลข 1-200 ซม.'));
+            }
+            
+            const finalErrors = errors.filter(e => e !== null);
+            if (finalErrors.length > 0) {
+                showAlert('ข้อมูลไม่ถูกต้อง', 'กรุณาตรวจสอบข้อมูลและแก้ไขให้ถูกต้อง:\n' + finalErrors.join('\n'));
+                return false;
+            }
+            return true;
+        }
+        
         function validateCalculationInputs(shouldShowAlert = true) {
             const inputs = {
                 'อายุ': $('#age').val(), 'เพศ': $('input[name="sex"]:checked').val(),
@@ -496,25 +470,22 @@
         // --- Risk Calculation and Display ---
         function calculateRisk() {
             let age = parseFloat($('#age').val()) || 0;
-            let sbp = parseFloat($('#sbp').val()) || 0;
             age = Math.max(30, Math.min(age, 70));
-            sbp = Math.max(70, Math.min(sbp, 220));
+            
+            let sbp = parseFloat($('#sbp').val()) || 0;
+            const sbpForCalc = Math.max(70, Math.min(sbp, 220));
 
             const inputs = {
-                age: age, sbp: sbp,
-                smoke: +$('input[name="smoke"]:checked').val(),
-                dm: +$('input[name="dm"]:checked').val(),
-                sex: +$('input[name="sex"]:checked').val(),
-                useC: +$('input[name="useCholesterol"]:checked').val(),
-                tc: parseFloat($('#tc').val()) || 0,
-                wc_inch: parseFloat($('#wc').val()) || 0,
-                ht: parseFloat($('#bdh').val()) || 0
+                age: age, sbp: sbp, sbpForCalc: sbpForCalc,
+                smoke: +$('input[name="smoke"]:checked').val(), dm: +$('input[name="dm"]:checked').val(),
+                sex: +$('input[name="sex"]:checked').val(), useC: +$('input[name="useCholesterol"]:checked').val(),
+                tc: parseFloat($('#tc').val()) || 0, wc_inch: parseFloat($('#wc').val()) || 0, ht: parseFloat($('#bdh').val()) || 0
             };
 
             const wc_cm = !isNaN(inputs.wc_inch) ? inputs.wc_inch * 2.5 : NaN;
             const whr = !isNaN(wc_cm) && !isNaN(inputs.ht) && inputs.ht > 0 ? wc_cm / inputs.ht : NaN;
 
-            const [_, pr, __, cr] = TASCVDformular(inputs.age, inputs.smoke, inputs.dm, inputs.sbp, inputs.sex, inputs.tc, whr);
+            const [_, pr, __, cr] = TASCVDformular(inputs.age, inputs.smoke, inputs.dm, inputs.sbpForCalc, inputs.sex, inputs.tc, whr);
             const pct = (pr * 100).toFixed(2);
             const cls = classifyRisk(pr);
             const compareRatio = (cr > 0 && pr > 0) ? (pr / cr).toFixed(1) : "N/A";
@@ -536,7 +507,7 @@
                 <div class="progress-bar-container">
                     <div class="progress-bar" style="width: ${riskData.riskPercent}%; background-color: ${riskData.riskColor};">${riskData.riskPercent}%</div>
                 </div>
-                <p>ความเสี่ยงต่อการเกิดโรคเส้นเลือดหัวใจและหลอดเลือดในระยะเวลา 10 ปีของท่าน <strong>${riskData.riskPercent}%</strong> จัดอยู่ในกลุ่ม<strong>${riskData.riskGroup}</strong></p>
+                <p>ความเสี่ยงต่อการเกิดโรคเส้นเลือดหัวใจและหลอดเลือดในระยะเวลา 10 ปีของคุณ <strong>${riskData.riskPercent}%</strong> จัดอยู่ในกลุ่ม<strong>${riskData.riskGroup}</strong></p>
                 <p>${compareText}</p>
                 <hr>
                 <p><strong>ข้อแนะนำเบื้องต้น</strong></p>
@@ -561,25 +532,18 @@
 
             const riskPercent = parseFloat(riskData.riskPercent);
             let mainAdvice = "";
-            if (riskPercent < 10) {
-                mainAdvice = "เพื่อป้องกันการเกิดโรคหลอดเลือดในอนาคต ควรออกกำลังกายอย่างสม่ำเสมอ รับประทานผักผลไม้เป็นประจำ และตรวจสุขภาพประจำปี";
-            } else if (riskPercent < 20) {
-                mainAdvice = "ควรออกกำลังกายอย่างสม่ำเสมอ รับประทานผักผลไม้เป็นประจำ และควรได้รับการตรวจร่างกายประจำปีอย่างสม่ำเสมอ";
-            } else { // >= 20
-                mainAdvice = "ควรเข้ารับคำปรึกษาจากแพทย์ ในเบื้องต้นควรออกกำลังกายอย่างสม่ำเสมอ รับประทานผักผลไม้เป็นประจำ และเข้ารับการตรวจสุขภาพประจำปีอย่างสม่ำเสมอ";
-            }
-
-            if(specificSuggestions.length > 0) {
-                mainAdvice += "\n\n" + specificSuggestions.join("\n");
-            }
+            if (riskPercent < 10) mainAdvice = "เพื่อป้องกันการเกิดโรคหลอดเลือดในอนาคต ควรออกกำลังกายอย่างสม่ำเสมอ รับประทานผักผลไม้เป็นประจำ และตรวจสุขภาพประจำปี";
+            else if (riskPercent < 20) mainAdvice = "ควรออกกำลังกายอย่างสม่ำเสมอ รับประทานผักผลไม้เป็นประจำ และควรได้รับการตรวจร่างกายประจำปีอย่างสม่ำเสมอ";
+            else mainAdvice = "ควรเข้ารับคำปรึกษาจากแพทย์ ในเบื้องต้นควรออกกำลังกายอย่างสม่ำเสมอ รับประทานผักผลไม้เป็นประจำ และเข้ารับการตรวจสุขภาพประจำปีอย่างสม่ำเสมอ";
             
+            if(specificSuggestions.length > 0) mainAdvice += "\n\n" + specificSuggestions.join("\n");
             const finalAdvice = "เรียนรู้อาการของสโตรกเพื่อจะได้รักษาด้วยยาอย่างทันท่วงที (ภายใน 4.5 ชั่วโมง)";
             return { mainAdvice, finalAdvice, fullText: mainAdvice + "\n\n" + finalAdvice };
         }
 
         // --- Data Submission ---
         async function runSave(event) {
-            if (!validateCalculationInputs(true)) return;
+            if (!validateAllInputs()) return; // Use the new comprehensive validation
             if (!userProfile) { showAlert('เกิดข้อผิดพลาด', 'ยังไม่สามารถดึงข้อมูลผู้ใช้ LINE ได้ กรุณาลองเปิดใหม่อีกครั้ง'); return; }
             
             const saveButton = event.target;
@@ -588,8 +552,7 @@
 
             const { riskData, inputs } = calculateRisk();
             const suggestionText = generateSuggestionText(riskData, inputs).fullText;
-            let name = $('#name').val().trim();
-            if (!name) name = userProfile.displayName;
+            let name = $('#name').val().trim() || userProfile.displayName;
 
             const dataToSend = {
                 name: name, role: $('#role').val(), hn: $('#hn').val(), district: $('#district').val(), village: $('#village').val(), pcu: $('#pcu').val(),
@@ -601,7 +564,7 @@
                 userId: userProfile.userId, displayName: userProfile.displayName, pictureUrl: userProfile.pictureUrl,
                 allow_tel: $('#allow_tel').is(':checked') ? $('#allow_tel').val() : 'ไม่ยินยอม',
                 pdpa: $('#pdpa').is(':checked') ? $('#pdpa').val() : 'ไม่ยินยอม',
-                suggestionText: suggestionText // Pass full suggestion text
+                suggestionText: suggestionText
             };
 
             try {
@@ -639,11 +602,11 @@
 
         function classifyRisk(r) {
             const p = r * 100;
-            if (p < 10) return { text: "เสี่ยงต่ำ", color: "#28a745" };
-            if (p < 20) return { text: "เสี่ยงปานกลาง", color: "#ffc107" };
-            if (p < 30) return { text: "เสี่ยงสูง", color: "#fd7e14" };
-            if (p < 40) return { text: "เสี่ยงสูงมาก", color: "#dc3545" };
-            return { text: "เสี่ยงอันตราย", color: "#8B0000" };
+            if (p < 10) return { text: "เสี่ยงต่ำ(เขียว)", color: "#28a745" };
+            if (p < 20) return { text: "เสี่ยงปานกลาง(เหลือง)", color: "#ffc107" };
+            if (p < 30) return { text: "เสี่ยงสูง(ส้ม)", color: "#fd7e14" };
+            if (p < 40) return { text: "เสี่ยงสูงมาก(แดง)", color: "#dc3545" };
+            return { text: "เสี่ยงสูงอันตราย(แดงเข้ม)", color: "#8B0000" };
         }
     </script>
 </body>
