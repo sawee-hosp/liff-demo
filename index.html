@@ -10,7 +10,7 @@
     <style>
         body { font-family: "Noto Sans Thai", sans-serif; font-size: 16px; background: #f5f5f5; padding: 16px; }
         .container { max-width: 400px; margin: 0 auto; background: #fff; padding: 16px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-        h1 { font-size: 20px; text-align: center; margin-bottom: 20px; }
+        h1 { font-size: 22px; font-weight: bold; text-align: center; margin-bottom: 20px; }
         .form-group { display: flex; align-items: center; margin-bottom: 15px; }
         .form-group label { flex: 2; font-weight: bold; margin-right: 10px; }
         .form-group .input-wrapper { flex: 3; display: flex; }
@@ -25,12 +25,15 @@
         #patientForm .checkbox-group label { display: block; margin-bottom: 5px; white-space: normal; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
         .modal-content { background-color: #fefefe; margin: 40% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 300px; border-radius: 10px; text-align: center; }
+        #registration-status { color: #28a745; font-weight: bold; text-align: center; margin-bottom: 15px; display: none; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>สวีรู้ทันสโตรก</h1>
+        <h1>สวีรู้ทันสโตรก (Sawee/Stroke)</h1>
         
+        <div id="registration-status"></div>
+
         <form id="mainForm" onsubmit="return false;">
             <div class="form-group">
                 <label for="lineName">ชื่อ Line:</label>
@@ -38,9 +41,9 @@
             </div>
             
             <div class="form-group">
-                <label for="status">ประเมินให้ใคร:</label>
+                <label for="role">ประเมินให้ใคร:</label>
                 <div class="input-wrapper">
-                    <select id="status" class="form-control">
+                    <select id="role" class="form-control">
                         <option value="ประเมินตัวเอง" selected>ประเมินตัวเอง</option>
                         <option value="ญาติ/ผู้ดูแลผู้ป่วย">ญาติ/ผู้ดูแลผู้ป่วย</option>
                         <option value="จนท.สาธารณสุข">จนท.สาธารณสุข</option>
@@ -88,9 +91,9 @@
                     <label for="pcu">รพ.สต.:</label>
                     <div class="input-wrapper"><input type="text" id="pcu" readonly></div>
                 </div>
-                <div class="form-group checkbox-group">
+                <div class="form-group">
                     <label>โรคประจำตัว:</label>
-                    <div class="input-wrapper"><div>
+                    <div class="input-wrapper checkbox-group"><div>
                         <label><input type="checkbox" name="ud" value="โรคหลอดเลือดสมอง"> โรคหลอดเลือดสมอง</label>
                         <label><input type="checkbox" name="ud" value="ความดันสูง"> ความดันสูง</label>
                         <label><input type="checkbox" name="ud" value="เบาหวาน"> เบาหวาน</label>
@@ -100,9 +103,9 @@
                         <label><input type="checkbox" name="ud" value="โรคหอบหืด"> โรคหอบหืด</label>
                     </div></div>
                 </div>
-                 <div class="form-group checkbox-group">
+                 <div class="form-group">
                     <label>คนช่วยเหลือเมื่อมีอาการ:</label>
-                    <div class="input-wrapper"><div>
+                    <div class="input-wrapper checkbox-group"><div>
                         <label><input type="checkbox" name="help" value="รถส่วนตัว"> รถส่วนตัว</label>
                         <label><input type="checkbox" name="help" value="ญาติ"> ญาติ</label>
                         <label><input type="checkbox" name="help" value="เพื่อนบ้าน"> เพื่อนบ้าน</label>
@@ -112,6 +115,14 @@
                         <label><input type="checkbox" name="help" value="รถรับจ้าง"> รถรับจ้าง</label>
                         <label><input type="checkbox" name="help" value="ไม่มี"> ไม่มี</label>
                     </div></div>
+                </div>
+                <div class="form-group checkbox-group" style="align-items: flex-start;">
+                    <div class="input-wrapper">
+                        <label>
+                            <input type="checkbox" id="allow_tel" name="allow_tel" value="อนุญาตให้ อสม. หรือเจ้าหน้าที่สาธารณสุข ติดต่อท่านทาง Line หรือทางโทรศัพท์" checked>
+                            อนุญาตให้ อสม. หรือเจ้าหน้าที่สาธารณสุข ติดต่อท่านทาง Line หรือทางโทรศัพท์
+                        </label>
+                    </div>
                 </div>
             </div>
 
@@ -198,7 +209,6 @@
 
     <script>
         const LIFF_ID = '2005789397-pklo1yJP';
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbyOGwvmHse-JGP4CDTuufONjBtogQFKiTh0Y8tzUKmNwNASHXyxJi6A8s6EHFKKqyyJ/exec';
         let userProfile = null;
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -230,8 +240,23 @@
                 } else {
                     userProfile = await liff.getProfile();
                     $('#lineName').val(userProfile.displayName);
+                    
+                    // ⭐️ เรียกใช้ฟังก์ชันตรวจสอบผู้ใช้จากฝั่ง Server
+                    google.script.run
+                        .withSuccessHandler(displayRegistrationStatus)
+                        .withFailureHandler(err => console.error("checkUserRegistration failed:", err))
+                        .checkUserRegistration(userProfile.userId);
                 }
             } catch (e) { console.error('LIFF Init Error:', e); }
+        }
+
+        // ⭐️ ฟังก์ชันใหม่: แสดงสถานะการลงทะเบียน
+        function displayRegistrationStatus(timestamp) {
+            if (timestamp) {
+                const statusDiv = $('#registration-status');
+                statusDiv.html(`✔️ ท่านเคยลงทะเบียนแล้วเมื่อ ${timestamp}`);
+                statusDiv.show();
+            }
         }
 
         function toggleSawiPatientForm() {
@@ -315,7 +340,7 @@
             const suggestionText = generateSuggestionText(riskData);
             const resultHtml = `
                 <p>ความเสี่ยงต่อการเกิดโรคเส้นเลือดหัวใจและหลอดเลือดในระยะเวลา 10 ปีของท่าน <strong>${riskData.riskPercent}%</strong> จัดอยู่ในกลุ่ม<strong>${riskData.riskGroup}</strong></p>
-                <p>ซึ่งระดับความเสี่ยงของท่านต่ำเป็น <strong>${riskData.compareRatio} เท่า</strong>ของคนไทยเพศเดียวกัน อายุเท่ากัน และปราศจากปัจจัยเสี่ยง</p>
+                <p>ซึ่งใกล้เคียงกับระดับความเสี่ยงของคนไทยเพศเดียวกัน อายุเท่ากัน และปราศจากปัจจัยเสี่ยง</p>
                 <hr>
                 <p><strong>ข้อแนะนำเบื้องต้น</strong></p>
                 <p style="white-space: pre-wrap;">${suggestionText}</p>
@@ -336,7 +361,11 @@
             }
 
             let suggestionStr = suggestions.length > 0 ? suggestions.join('\n') + "\n" : "";
-            suggestionStr += "• เรียนรู้อาการของสโตรกที่อาจเกิดขึ้นและรีบมาโรงพยาบาลทันทีถ้ามีอาการ";
+            let strokeWarning = "• เรียนรู้อาการของสโตรกที่อาจเกิดขึ้นและรีบมาโรงพยาบาลทันทีถ้ามีอาการ";
+            if (parseInt($('#age').val()) < 50) {
+                strokeWarning += " (ซึ่งอาการนี้อาจเกิดได้แม้ในคนที่มีอายุน้อยๆ)";
+            }
+            suggestionStr += strokeWarning;
             return suggestionStr;
         }
 
@@ -345,52 +374,65 @@
             if (!userProfile) { alert('ยังไม่สามารถดึงข้อมูลผู้ใช้ได้ กรุณารอสักครู่'); return; }
             
             const saveButton = event.target;
-            saveButton.innerText = 'กำลังบันทึก...';
             saveButton.disabled = true;
+            saveButton.innerText = 'กำลังบันทึก...';
 
             const riskData = calculateRisk();
-            
-            const formData = new URLSearchParams();
             const ud_values = $('input[name="ud"]:checked').map((_, el) => $(el).val()).get().join(', ');
             const help_values = $('input[name="help"]:checked').map((_, el) => $(el).val()).get().join(', ');
+            const allow_tel_consent = $('#allow_tel').is(':checked') ? $('#allow_tel').val() : 'ไม่ยินยอม';
             const pdpa_consent = $('#pdpa').is(':checked') ? $('#pdpa').val() : 'ไม่ยินยอม';
 
-            formData.append('name', $('#name').val());
-            formData.append('status', $('#status').val());
-            formData.append('hn', $('#hn').val());
-            formData.append('district', $('#district').val());
-            formData.append('village', $('#village').val());
-            formData.append('pcu', $('#pcu').val());
-            formData.append('ud', ud_values);
-            formData.append('help', help_values);
-            formData.append('telephone', $('#telephone').val());
-            formData.append('gender', $('input[name="sex"]:checked').val());
-            formData.append('age', $('#age').val());
-            formData.append('smoke', $('input[name="smoke"]:checked').val());
-            formData.append('dm', $('input[name="dm"]:checked').val());
-            formData.append('sbp', $('#sbp').val());
-            formData.append('cholesterol', $('input[name="useCholesterol"]:checked').val() === '1' ? $('#tc').val() : '');
-            formData.append('waist', $('#wc').val());
-            formData.append('height', $('#bdh').val());
-            formData.append('thai_cv_risk_score', riskData.riskPercent);
-            formData.append('risk_group', riskData.riskGroup);
-            formData.append('risk_color', riskData.riskColor);
-            formData.append('compare_ratio', riskData.compareRatio);
-            formData.append('userId', userProfile.userId);
-            formData.append('displayName', userProfile.displayName);
-            formData.append('pictureUrl', userProfile.pictureUrl);
-            formData.append('pdpa', pdpa_consent);
+            const dataToSend = {
+                name: $('#name').val(),
+                role: $('#role').val(),
+                hn: $('#hn').val(),
+                district: $('#district').val(),
+                village: $('#village').val(),
+                pcu: $('#pcu').val(),
+                ud: ud_values,
+                help: help_values,
+                telephone: $('#telephone').val(),
+                gender: $('input[name="sex"]:checked').val(),
+                age: $('#age').val(),
+                smoke: $('input[name="smoke"]:checked').val(),
+                dm: $('input[name="dm"]:checked').val(),
+                sbp: $('#sbp').val(),
+                cholesterol: $('input[name="useCholesterol"]:checked').val() === '1' ? $('#tc').val() : '',
+                waist: $('#wc').val(),
+                height: $('#bdh').val(),
+                thai_cv_risk_score: riskData.riskPercent,
+                risk_group: riskData.riskGroup,
+                risk_color: riskData.riskColor,
+                compare_ratio: riskData.compareRatio,
+                userId: userProfile.userId,
+                displayName: userProfile.displayName,
+                pictureUrl: userProfile.pictureUrl,
+                allow_tel: allow_tel_consent,
+                pdpa: pdpa_consent
+            };
 
             try {
-                await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: formData });
-                $('#successModal').show();
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    redirect: "follow",
+                    body: JSON.stringify(dataToSend),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    $('#successModal').show();
+                } else {
+                    throw new Error(result.message);
+                }
             } catch (error) {
                 alert(`การบันทึกข้อมูลล้มเหลว: ${error.message}`);
-                saveButton.innerText = 'บันทึกประวัติ';
+            } finally {
                 saveButton.disabled = false;
+                saveButton.innerText = 'บันทึกประวัติ';
             }
         }
-
+        
         function TASCVDformular(age, smoke, dm, sbp, sex, tc, whr) {
             const sur_root = 0.964588;
             let full_score = 0, compare_score = 0, predicted_risk = 0, compare_risk = 0;
