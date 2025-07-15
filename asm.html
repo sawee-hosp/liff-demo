@@ -1,112 +1,179 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ลงทะเบียน อสม.สโตรก</title>
+  <!-- ฟอนต์ Noto Sans Thai -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap" rel="stylesheet"/>
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-XQoYMqMTK8LvdlDXvXO0A+7Wt6pr2bMtMZU5C2JgS00="
+    crossorigin=""
+  />
+  <!-- LINE LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap" rel="stylesheet">
   <style>
-    body { font-family:"Noto Sans Thai",sans-serif; background:#f5f5f5; padding:16px; margin:0; }
-    .container { max-width:400px; margin:0 auto; background:#fff; padding:16px; border-radius:8px;
-                 box-shadow:0 2px 6px rgba(0,0,0,0.1); }
-    h1 { font-size:22px; font-weight:bold; color:#003366; text-align:center; margin-bottom:20px; }
-    .form-group { display:flex; align-items:center; margin-bottom:15px; }
-    .form-group label { flex:2; font-weight:bold; margin-right:10px; }
-    .input-wrapper { flex:3; }
-    input, select, textarea { width:100%; padding:10px; font-size:1rem; border-radius:10px;
-                               border:1px solid #ccc; font-family:"Noto Sans Thai",sans-serif; }
-    input[readonly] { background:#e9ecef; cursor:not-allowed; }
-    button { width:100%; padding:15px; font-size:1rem; color:#fff; background:#007BFF;
-             border:none; border-radius:10px; cursor:pointer; margin-top:8px; }
-    button:disabled { background:#ccc; cursor:not-allowed; }
-    #map { width:100%; height:200px; border-radius:8px; margin-bottom:15px; }
+    body {
+      font-family: "Noto Sans Thai", sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 16px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      max-width: 400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1 {
+      font-size: 1.5rem;
+      color: #003366;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-family: inherit;
+    }
+    input[readonly] {
+      background: #e9ecef;
+      cursor: not-allowed;
+    }
+    #map {
+      width: 100%;
+      height: 200px;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      color: #fff;
+      background: #007bff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .checkbox-group input {
+      margin-right: 0.5rem;
+    }
+    .profile-pic {
+      display: block;
+      margin: 0 auto 1rem auto;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="card">
     <h1>ลงทะเบียน อสม.สโตรก</h1>
     <form id="asmForm" onsubmit="return false;">
-      <!-- LIFF Profile -->
+      <!-- LINE Profile -->
       <div class="form-group">
-        <label>ชื่อ Line:</label>
-        <div class="input-wrapper">
-          <input type="text" id="displayName" readonly>
-        </div>
+        <label>ชื่อใน LINE:</label>
+        <input type="text" id="displayName" readonly>
       </div>
+      <img id="profilePicture" class="profile-pic" src="" alt="Profile Picture"/>
+
+      <!-- ชื่อนามสกุลจริง -->
       <div class="form-group">
-        <label>รูปโปรไฟล์:</label>
-        <div class="input-wrapper">
-          <img id="profilePicture" src="" alt="profile" style="width:48px;height:48px;border-radius:50%;">
-        </div>
+        <label for="realName">ชื่อ-นามสกุลจริง:</label>
+        <input type="text" id="realName" placeholder="ระบุชื่อ-นามสกุลจริง">
       </div>
 
-      <!-- phone -->
+      <!-- เบอร์โทรศัพท์ -->
       <div class="form-group">
-        <label for="phone">เบอร์โทร:</label>
-        <div class="input-wrapper">
-          <input type="text" id="phone" placeholder="0XXXXXXXXX">
-        </div>
+        <label for="phone">เบอร์โทรศัพท์:</label>
+        <input type="text" id="phone" placeholder="0XXXXXXXXX">
       </div>
 
-      <!-- area (dynamic from volunteer_list) -->
+      <!-- ชื่อ LINE ที่ให้เพิ่มเป็นเพื่อน -->
+      <div class="form-group">
+        <label for="lineId">ชื่อ LINE (ให้เพิ่มเพื่อน):</label>
+        <input type="text" id="lineId" placeholder="ระบุชื่อ LINE ของคุณ">
+      </div>
+
+      <!-- พื้นที่ -->
       <div class="form-group">
         <label for="area">พื้นที่:</label>
-        <div class="input-wrapper">
-          <select id="area">
-            <option value="">กำลังโหลด...</option>
-          </select>
-        </div>
+        <select id="area">
+          <option value="">กำลังโหลดพื้นที่...</option>
+        </select>
       </div>
 
-      <!-- latlong + map -->
+      <!-- Lat/Long -->
       <div class="form-group">
         <label for="latlong">Lat/Long:</label>
-        <div class="input-wrapper">
-          <input type="text" id="latlong" readonly placeholder="คลิกแผนที่เพื่อเลือกพิกัด">
-        </div>
+        <input type="text" id="latlong" readonly placeholder="ลากหมุดบนแผนที่ด้านล่าง">
       </div>
       <div id="map"></div>
 
-      <!-- note -->
-      <div class="form-group">
-        <label for="note">หมายเหตุ:</label>
-        <div class="input-wrapper">
-          <textarea id="note" rows="2"></textarea>
-        </div>
-      </div>
-
-      <!-- pdpa -->
-      <div class="form-group">
-        <label>PDPA:</label>
-        <div class="input-wrapper">
-          <label><input type="checkbox" id="pdpa" checked> ยินยอมให้แชร์ข้อมูล</label>
-        </div>
+      <!-- PDPA Consent -->
+      <div class="checkbox-group">
+        <input type="checkbox" id="pdpa" checked>
+        <label for="pdpa">อนุญาตให้ทีม รพ.สวี ใช้ข้อมูลส่วนบุคคลเพื่อดูแลสุขภาพ</label>
       </div>
 
       <button id="submitBtn">ลงทะเบียน</button>
     </form>
   </div>
 
-  <script>
-    const LIFF_ID   = '2005789397-pklo1yJP';
-    const GAS_URL   = 'https://script.google.com/macros/s/AKfycbyOGwvmHse-JGP4CDTuufONjBtogQFKiTh0Y8tzUKmNwNASHXyxJi6A8s6EHFKKqyyJ/exec';
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-o9N1j7kLkTg0vP8icm+VQVnJgOd3QoDjxA7aGJS5Vnk="
+    crossorigin=""
+  ></script>
 
+  <script>
+    const LIFF_ID = '2005789397-pklo1yJP';
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbyOGwvmHse-JGP4CDTuufONjBtogQFKiTh0Y8tzUKmNwNASHXyxJi6A8s6EHFKKqyyJ/exec';
     let userProfile;
 
-    // 1) Initialize LIFF & fetch available areas
     window.onload = async () => {
       await liff.init({ liffId: LIFF_ID });
-      if (!liff.isLoggedIn()) liff.login();
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
       userProfile = await liff.getProfile();
       document.getElementById('displayName').value = userProfile.displayName;
       document.getElementById('profilePicture').src = userProfile.pictureUrl;
 
       await loadAvailableAreas();
-      initMap();
+      initLeafletMap();
     };
 
-    // fetch areas with at least one free slot
     async function loadAvailableAreas() {
       try {
         const res = await fetch(`${GAS_URL}?action=getAvailableAreas`);
@@ -129,57 +196,65 @@
       }
     }
 
-    // 2) Map picker
-    function initMap(){
-      const center = { lat:13.4500, lng:99.1000 };
-      const map = new google.maps.Map(document.getElementById('map'), { center, zoom:12 });
-      let marker = new google.maps.Marker({ map, position:center, draggable:true });
-      updateLatLong(center);
-      marker.addListener('dragend', () => updateLatLong(marker.getPosition()));
-      map.addListener('click', e => {
-        marker.setPosition(e.latLng);
-        updateLatLong(e.latLng);
+    function initLeafletMap() {
+      // จุดเริ่มต้น: อำเภอสวี, จ.ชุมพร
+      const center = [13.4500, 99.1000];
+      const map = L.map('map').setView(center, 12);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      const marker = L.marker(center, { draggable: true }).addTo(map);
+      updateLatLng(center);
+
+      marker.on('dragend', e => {
+        updateLatLng(e.target.getLatLng());
+      });
+      map.on('click', e => {
+        marker.setLatLng(e.latlng);
+        updateLatLng(e.latlng);
       });
     }
-    function updateLatLong(latlng) {
-      document.getElementById('latlong').value =
-        latlng.lat().toFixed(6) + ',' + latlng.lng().toFixed(6);
-    }
-    // load Google Maps
-    const gmaps = document.createElement('script');
-    gmaps.src = 'https://maps.googleapis.com/maps/api/js?key=<<<YOUR_API_KEY>>>&callback=initMap';
-    gmaps.defer = true;
-    document.head.appendChild(gmaps);
 
-    // 3) Submit registration
+    function updateLatLng(latlng) {
+      document.getElementById('latlong').value =
+        latlng.lat.toFixed(6) + ',' + latlng.lng.toFixed(6);
+    }
+
     document.getElementById('submitBtn').onclick = async () => {
+      const realName = document.getElementById('realName').value.trim();
       const phoneRaw = document.getElementById('phone').value.trim();
-      const phone = phoneRaw.startsWith('0') ? phoneRaw : '0' + phoneRaw;
-      const area = document.getElementById('area').value;
-      if (!area) return alert('กรุณาเลือกพื้นที่');
+      const phone    = phoneRaw.startsWith('0') ? phoneRaw : '0' + phoneRaw;
+      const lineId   = document.getElementById('lineId').value.trim();
+      const area     = document.getElementById('area').value;
+      if (!realName || !phone || !lineId || !area) {
+        alert('กรุณากรอกข้อมูลให้ครบทุกช่อง');
+        return;
+      }
 
       const payload = {
-        action:    'registerAsm',
+        action:      'registerAsm',
         displayName: userProfile.displayName,
         userId:      userProfile.userId,
         pictureUrl:  userProfile.pictureUrl,
+        realName,
         phone,
+        lineId,
         area,
-        note:        document.getElementById('note').value.trim(),
+        latlong:     document.getElementById('latlong').value,
         pdpa:        document.getElementById('pdpa').checked ? 'ยินยอม' : 'ไม่ยินยอม'
       };
+
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
       try {
         const res = await fetch(GAS_URL, {
-          method:'POST',
-          headers:{ 'Content-Type':'application/json' },
-          body: JSON.stringify(payload)
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:   JSON.stringify(payload)
         });
         const j = await res.json();
         if (j.status === 'success') {
           alert('ลงทะเบียนเรียบร้อยแล้ว');
-          // รีโหลด options อีกครั้ง
           await loadAvailableAreas();
         } else {
           throw new Error(j.message);
