@@ -6,94 +6,35 @@
   <title>ลงทะเบียน อสม.สโตรก</title>
   <!-- ฟอนต์ Noto Sans Thai -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap" rel="stylesheet"/>
-  <!-- LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body {
-      font-family: "Noto Sans Thai", sans-serif;
-      background: #f5f5f5;
-      margin: 0;
-      padding: 16px;
+    body { font-family:"Noto Sans Thai",sans-serif; background:#f5f5f5; margin:0; padding:16px }
+    .card { background:#fff; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,0.1);
+      max-width:400px; margin:0 auto; padding:24px }
+    h1 { font-size:1.5rem; color:#003366; text-align:center; margin-bottom:1rem }
+    .form-group { display:flex; align-items:center; margin-bottom:1rem }
+    .form-group label { flex:1; min-width:100px; font-weight:bold }
+    .form-group .input-wrapper { flex:2 }
+    .form-group input, .form-group select {
+      width:100%; padding:0.5rem; font-size:1rem; border:1px solid #ccc;
+      border-radius:8px; font-family:inherit
     }
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      max-width: 400px;
-      margin: 0 auto;
-      padding: 24px;
-    }
-    h1 {
-      font-size: 1.5rem;
-      color: #003366;
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-    .form-group {
-      display: flex;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-    .form-group label {
-      flex: 1;
-      min-width: 100px;
-      font-weight: bold;
-    }
-    .form-group .input-wrapper {
-      flex: 2;
-    }
-    .form-group input,
-    .form-group select {
-      width: 100%;
-      padding: 0.5rem;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-family: inherit;
-    }
-    input[readonly] {
-      background: #e9ecef;
-      cursor: not-allowed;
-    }
-    .profile-img-wrapper {
-      flex: 2;
-      text-align: center;
-    }
-    .profile-img-wrapper img {
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-    .checkbox-group {
-      display: flex;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-    .checkbox-group input {
-      margin-right: 0.5rem;
-    }
+    input[readonly] { background:#e9ecef; cursor:not-allowed }
+    .profile-img-wrapper { flex:2; text-align:center }
+    .profile-img-wrapper img { width:64px; height:64px; border-radius:50% }
+    .checkbox-group { display:flex; align-items:center; margin-bottom:1rem }
+    .checkbox-group input { margin-right:0.5rem }
     button {
-      width: 100%;
-      padding: 0.75rem;
-      font-size: 1rem;
-      font-family: "Noto Sans Thai", sans-serif;
-      color: #fff;
-      background: #007bff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
+      width:100%; padding:0.75rem; font-size:1rem; font-family:"Noto Sans Thai",sans-serif;
+      color:#fff; background:#007bff; border:none; border-radius:8px; cursor:pointer
     }
-    button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
+    button:disabled { background:#ccc; cursor:not-allowed }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>ลงทะเบียน อสม.สโตรก</h1>
-    <form id="asmForm" onsubmit="return false;">
+    <form id="asmForm" enctype="multipart/form-data" onsubmit="return false;">
       <!-- ชื่อใน LINE -->
       <div class="form-group">
         <label>ชื่อใน LINE:</label>
@@ -122,23 +63,23 @@
           <input type="text" id="phone" placeholder="0XXXXXXXXX">
         </div>
       </div>
-      <!-- อัพโหลด QR code เพิ่มเพื่อนไลน์ (URL) -->
+      <!-- อัพโหลด QR code -->
       <div class="form-group">
-        <label for="qrUrl">อัพโหลด QR code:</label>
+        <label for="qrFile">อัพโหลด QR code:</label>
         <div class="input-wrapper">
-          <input type="url" id="qrUrl" placeholder="วาง URL รูป QR code">
+          <input type="file" id="qrFile" accept="image/*">
         </div>
       </div>
-      <!-- พื้นที่ (เลือกได้หลายหมู่บ้าน) -->
+      <!-- พื้นที่ (multi-select) -->
       <div class="form-group">
-        <label for="areas">พื้นที่:</label>
+        <label for="areas">พื้นที่: (เลือกได้มากกว่า 1)</label>
         <div class="input-wrapper">
           <select id="areas" multiple size="5">
-            <option value="">กำลังโหลด...</option>
+            <option>กำลังโหลด...</option>
           </select>
         </div>
       </div>
-      <!-- PDPA -->
+      <!-- PDPA Consent -->
       <div class="checkbox-group">
         <input type="checkbox" id="pdpa" checked>
         <label for="pdpa">อนุญาตให้ทีม รพ.สวี ใช้ข้อมูลส่วนบุคคลเพื่อดูแลสุขภาพ</label>
@@ -154,96 +95,86 @@
     let userProfile;
 
     document.addEventListener('DOMContentLoaded', async () => {
-      // เริ่ม LIFF
       await liff.init({ liffId: LIFF_ID });
-      if (!liff.isLoggedIn()) {
-        liff.login();
-        return;
-      }
+      if (!liff.isLoggedIn()) { liff.login(); return; }
       userProfile = await liff.getProfile();
       document.getElementById('displayName').value   = userProfile.displayName;
       document.getElementById('profilePicture').src  = userProfile.pictureUrl;
-
-      await loadAvailableAreas();
+      loadAvailableAreas();
     });
 
-    // ดึงพื้นที่มาจาก GAS
-    async function loadAvailableAreas() {
-      try {
-        const res  = await fetch(`${GAS_URL}?action=getAvailableAreas`);
-        const json = await res.json();
-        const sel  = document.getElementById('areas');
+    function loadAvailableAreas() {
+      const script = document.createElement('script');
+      window.handleAreas = res => {
+        const sel = document.getElementById('areas');
         sel.innerHTML = '';
-        if (json.status === 'success') {
-          json.areas.forEach(a => {
-            const opt = document.createElement('option');
-            opt.value = a;
-            opt.textContent = a;
-            sel.appendChild(opt);
+        if (res.status === 'success') {
+          res.areas.forEach(a => {
+            const o = document.createElement('option');
+            o.value = o.textContent = a;
+            sel.appendChild(o);
           });
         } else {
-          // เกิดข้อผิดพลาด
-          sel.innerHTML = '<option value="">ไม่พบพื้นที่ว่าง</option>';
+          sel.innerHTML = '<option>ไม่พบพื้นที่ว่าง</option>';
         }
-      } catch (err) {
-        console.error('loadAvailableAreas error:', err);
-        const sel = document.getElementById('areas');
-        sel.innerHTML = '<option value="">โหลดพื้นที่ผิดพลาด</option>';
-      }
+      };
+      script.src = `${GAS_URL}?action=getAvailableAreas&callback=handleAreas`;
+      document.head.appendChild(script);
     }
 
-    // อ่านค่าหลายหมู่บ้านที่เลือก
     function getSelectedAreas() {
       return Array.from(
         document.getElementById('areas').selectedOptions
       ).map(o => o.value);
     }
 
-    // เมื่อคลิกลงทะเบียน
-    document.getElementById('submitBtn').addEventListener('click', async () => {
+    document.getElementById('submitBtn').addEventListener('click', () => {
       const realName = document.getElementById('realName').value.trim();
       const phoneRaw = document.getElementById('phone').value.trim();
-      const phone    = phoneRaw.startsWith('0') ? phoneRaw : '0' + phoneRaw;
-      const qrUrl    = document.getElementById('qrUrl').value.trim();
+      const phone    = phoneRaw.startsWith('0') ? phoneRaw : '0'+phoneRaw;
       const areas    = getSelectedAreas();
       const pdpa     = document.getElementById('pdpa').checked ? 'ยินยอม' : 'ไม่ยินยอม';
+      const qrFile   = document.getElementById('qrFile').files[0];
 
-      if (!realName || !phone || !qrUrl || areas.length === 0) {
-        alert('กรุณากรอกข้อมูลให้ครบทุกช่อง และเลือกอย่างน้อย 1 พื้นที่');
-        return;
+      if (!realName || !phone || areas.length===0) {
+        return alert('กรุณากรอกข้อมูลให้ครบทุกช่องและเลือกพื้นที่อย่างน้อย 1 แห่ง');
       }
 
-      const payload = {
+      window.handleRegister = res => {
+        if (res.status==='done') {
+          alert('ลงทะเบียนเรียบร้อยแล้ว');
+          loadAvailableAreas();
+        } else {
+          alert('Error: '+res.message);
+        }
+      };
+
+      // สร้าง JSONP request พร้อมพารามิเตอร์
+      const params = new URLSearchParams({
         action:      'registerAsm',
+        callback:    'handleRegister',
         displayName: userProfile.displayName,
         userId:      userProfile.userId,
         pictureUrl:  userProfile.pictureUrl,
         realName,
         phone,
-        qrUrl,
-        areas,  // array of selected villages
-        pdpa
-      };
-
-      const btn = document.getElementById('submitBtn');
-      btn.disabled = true;
-      try {
-        const res  = await fetch(GAS_URL, {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify(payload)
-        });
-        const json = await res.json();
-        if (json.status === 'done' || json.status === 'success') {
-          alert('ลงทะเบียนเรียบร้อยแล้ว');
-          await loadAvailableAreas();
-        } else {
-          throw new Error(json.message || 'ไม่สามารถลงทะเบียนได้');
-        }
-      } catch (err) {
-        alert('Error: ' + err.message);
-      } finally {
-        btn.disabled = false;
+        pdpa,
+        areas:       areas.join(',')
+      });
+      // ถ้ามีไฟล์ QR ให้ append เป็น query param แบบ data URI
+      if (qrFile) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          params.append('qrData', encodeURIComponent(reader.result));
+          const s2 = document.createElement('script');
+          s2.src = `${GAS_URL}?${params.toString()}`;
+          document.head.appendChild(s2);
+        };
+        reader.readAsDataURL(qrFile);
+      } else {
+        const s2 = document.createElement('script');
+        s2.src = `${GAS_URL}?${params.toString()}`;
+        document.head.appendChild(s2);
       }
     });
   </script>
