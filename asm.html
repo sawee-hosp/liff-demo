@@ -1,158 +1,102 @@
+// ===== FILE: asm.html =====
 <!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ลงทะเบียน อสม.สโตรก</title>
-  <!-- ฟอนต์ Noto Sans Thai -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap" rel="stylesheet"/>
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <!-- LINE LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: "Noto Sans Thai", sans-serif; background: #f5f5f5; margin: 0; padding: 16px; }
-    .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; padding: 24px; }
-    h1 { font-size: 1.5rem; color: #003366; text-align: center; margin-bottom: 1rem; }
-    .form-group { display: flex; align-items: center; margin-bottom: 1rem; }
-    .form-group label { flex: 1; min-width: 100px; font-weight: bold; }
-    .form-group .input-wrapper { flex: 2; }
-    .form-group input,
-    .form-group select { width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; }
-    input[readonly] { background: #e9ecef; cursor: not-allowed; }
-    .profile-pic { display: block; margin: 0 auto 1rem; width: 64px; height: 64px; border-radius: 50%; }
-    #map { width: 100%; height: 200px; border-radius: 8px; margin-bottom: 1rem; }
-    .checkbox-group { display: flex; align-items: center; margin-bottom: 1rem; }
-    .checkbox-group input { margin-right: 0.5rem; }
-    button { width: 100%; padding: 0.75rem; font-size: 1rem; font-family: "Noto Sans Thai", sans-serif; color: #fff; background: #007bff; border: none; border-radius: 8px; cursor: pointer; }
-    button:disabled { background: #ccc; cursor: not-allowed; }
+    body { font-family: "Noto Sans Thai", sans-serif; background: #f5f5f5; margin:0; padding:16px; }
+    .card { background:#fff; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,0.1); max-width:400px; margin:0 auto; padding:24px; }
+    h1 { font-size:1.5rem; color:#003366; text-align:center; margin-bottom:1rem; }
+    .form-group { display:flex; align-items:center; margin-bottom:1rem; }
+    .form-group label { flex:1; min-width:100px; font-weight:bold; }
+    .form-group .input-wrapper { flex:2; }
+    .form-group input, select { width:100%; padding:0.5rem; font-size:1rem; border:1px solid #ccc; border-radius:8px; }
+    .profile-pic { display:block; margin:0 auto 1rem; width:64px; height:64px; border-radius:50%; }
+    .checkbox-group { display:flex; align-items:center; margin-bottom:1rem; }
+    .checkbox-group input { margin-right:0.5rem; }
+    button { width:100%; padding:0.75rem; font-size:1rem; font-family:"Noto Sans Thai",sans-serif; color:#fff; background:#007bff; border:none; border-radius:8px; cursor:pointer; }
+    button:disabled { background:#ccc; cursor:not-allowed; }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>ลงทะเบียน อสม.สโตรก</h1>
-    <form id="asmForm" onsubmit="return false;" enctype="multipart/form-data">
-      <!-- LINE Profile -->
+    <form id="asmForm" onsubmit="return false;">
       <div class="form-group">
         <label>ชื่อใน LINE:</label>
-        <div class="input-wrapper"><input type="text" id="displayName" readonly></div>
+        <div class="input-wrapper"><input id="displayName" readonly></div>
       </div>
-      <img id="profilePicture" class="profile-pic" src="" alt="Profile Picture"/>
-
-      <!-- ชื่อนามสกุลจริง -->
+      <img id="profilePicture" class="profile-pic" src="" alt="Profile"/>
       <div class="form-group">
         <label for="realName">ชื่อ-นามสกุลจริง:</label>
-        <div class="input-wrapper"><input type="text" id="realName" placeholder="ระบุชื่อ-นามสกุลจริง"></div>
+        <div class="input-wrapper"><input id="realName" placeholder="ชื่อ-นามสกุลจริง"></div>
       </div>
-
-      <!-- เบอร์โทรศัพท์ -->
       <div class="form-group">
         <label for="phone">เบอร์โทรศัพท์:</label>
-        <div class="input-wrapper"><input type="text" id="phone" placeholder="0XXXXXXXXX"></div>
+        <div class="input-wrapper"><input id="phone" placeholder="0XXXXXXXXX"></div>
       </div>
-
-      <!-- อัพโหลด QR code เพิ่มเพื่อนไลน์ -->
       <div class="form-group">
         <label for="qrFile">อัพโหลด QR code:</label>
         <div class="input-wrapper"><input type="file" id="qrFile" accept="image/*"></div>
       </div>
-
-      <!-- พื้นที่ -->
       <div class="form-group">
         <label for="area">พื้นที่:</label>
-        <div class="input-wrapper">
-          <select id="area"><option value="">กำลังโหลดพื้นที่...</option></select>
-        </div>
+        <div class="input-wrapper"><select id="area"><option>กำลังโหลด...</option></select></div>
       </div>
-
-      <!-- PDPA Consent -->
       <div class="checkbox-group">
         <input type="checkbox" id="pdpa" checked>
         <label for="pdpa">อนุญาตให้ทีม รพ.สวี ใช้ข้อมูลส่วนบุคคลเพื่อดูแลสุขภาพ</label>
       </div>
-
       <button id="submitBtn">ลงทะเบียน</button>
     </form>
   </div>
-
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
   <script>
     const LIFF_ID = '2005789397-pklo1yJP';
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbyOGwvmHse-JGP4CDTuufONjBtogQFKiTh0Y8tzUKmNwNASHXyxJi6A8s6EHFKKqyyJ/exec';
+    const BASE = location.origin + location.pathname;
     let userProfile;
-
     window.onload = async () => {
       await liff.init({ liffId: LIFF_ID });
-      if (!liff.isLoggedIn()) { liff.login(); return; }
+      if (!liff.isLoggedIn()) return liff.login();
       userProfile = await liff.getProfile();
       document.getElementById('displayName').value = userProfile.displayName;
       document.getElementById('profilePicture').src = userProfile.pictureUrl;
-
-      await loadAvailableAreas();
+      loadAvailableAreas();
     };
-
-    async function loadAvailableAreas() {
-      try {
-        const res = await fetch(`${GAS_URL}?action=getAvailableAreas`, { mode:'cors' });
-        const json = await res.json();
-        const sel = document.getElementById('area');
-        sel.innerHTML = '<option value="">-- เลือกพื้นที่ --</option>';
-        if (json.status === 'success') {
-          json.areas.forEach(a => {
-            const o = document.createElement('option'); o.value = a; o.textContent = a;
-            sel.appendChild(o);
+    function loadAvailableAreas() {
+      fetch(`${BASE}?action=getAvailableAreas`)
+        .then(r=>r.json())
+        .then(j=>{
+          const sel = document.getElementById('area');
+          sel.innerHTML = '<option value="">-- เลือก --</option>';
+          if (j.status==='success') j.areas.forEach(a=>{
+            const o=document.createElement('option'); o.value=o.textContent=a; sel.append(o);
           });
-        } else {
-          sel.innerHTML = '<option value="">ไม่พบพื้นที่ว่าง</option>';
-        }
-      } catch (err) {
-        console.error(err);
-        document.getElementById('area').innerHTML = '<option>โหลดพลาด</option>';
-      }
-    }
-
-    document.getElementById('submitBtn').onclick = async () => {
-      const realName = document.getElementById('realName').value.trim();
-      const phoneRaw = document.getElementById('phone').value.trim();
-      const phone = phoneRaw.startsWith('0') ? phoneRaw : '0'+phoneRaw;
-      const area = document.getElementById('area').value;
-      const pdpa = document.getElementById('pdpa').checked ? 'ยินยอม' : 'ไม่ยินยอม';
-      if (!realName || !phone || !area) {
-        alert('กรุณากรอกข้อมูลให้ครบทุกช่อง'); return;
-      }
-      // สร้าง FormData
-      const fd = new FormData();
-      fd.append('action','registerAsm');
-      fd.append('displayName',userProfile.displayName);
-      fd.append('userId',userProfile.userId);
-      fd.append('pictureUrl',userProfile.pictureUrl);
-      fd.append('realName',realName);
-      fd.append('phone',phone);
-      fd.append('area',area);
-      fd.append('pdpa',pdpa);
-      const fileInput = document.getElementById('qrFile');
-      if (fileInput.files.length) fd.append('qrFile', fileInput.files[0]);
-
-      const btn = document.getElementById('submitBtn');
-      btn.disabled = true;
-      try {
-        const response = await fetch(GAS_URL, {
-          method:'POST', mode:'cors', body: fd
+          else sel.innerHTML='<option>ไม่พบ</option>';
         });
-        const result = await response.json();
-        if (result.status === 'success') {
-          alert('ลงทะเบียนเรียบร้อยแล้ว');
-          await loadAvailableAreas();
-        } else {
-          throw new Error(result.message);
-        }
-      } catch (err) {
-        alert('Error: '+err.message);
-      } finally {
-        btn.disabled = false;
-      }
+    }
+    document.getElementById('submitBtn').onclick = async () => {
+      const data = {
+        action: 'registerAsm',
+        displayName: userProfile.displayName,
+        userId: userProfile.userId,
+        pictureUrl: userProfile.pictureUrl,
+        realName: document.getElementById('realName').value.trim(),
+        phone: (v=>v.startsWith('0')?v:'0'+v)(document.getElementById('phone').value.trim()),
+        area: document.getElementById('area').value,
+        pdpa: document.getElementById('pdpa').checked?'ยินยอม':'ไม่ยินยอม'
+      };
+      const formData = new FormData();
+      Object.entries(data).forEach(([k,v])=>formData.append(k,v));
+      const file = document.getElementById('qrFile').files[0];
+      if (file) formData.append('qrFile', file);
+      const res = await fetch(BASE, { method:'POST', body: formData });
+      const j = await res.json();
+      alert(j.status==='success'?'สำเร็จ':'Error: '+j.message);
+      if (j.status==='success') loadAvailableAreas();
     };
   </script>
 </body>
