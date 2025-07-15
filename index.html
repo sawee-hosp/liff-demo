@@ -8,88 +8,54 @@
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
     rel="stylesheet"
   />
-</head>
-<body class="p-3">
 
+  <!-- 1) ถ้ามี ?page=xxx แล้วเป็นชื่อหน้าที่อนุญาต ให้เปลี่ยนหน้าไป xxx.html เลย -->
+  <script>
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const page = params.get("page");
+      const allowed = ["risk","learning","asm","profile"];
+      if (page && allowed.includes(page)) {
+        // เก็บ query เดิมไว้ด้วย เผื่อมี state อื่น ๆ
+        window.location.replace(`${page}.html${window.location.search}`);
+      }
+    })();
+  </script>
+</head>
+
+<body class="p-3">
   <main id="app-container">
+    <!-- หน้าแรก (index) ให้แสดงได้เลย ไม่ต้อง fetch -->
     <div class="text-center">
-      <div class="spinner-border"></div>
-      <p>กำลังโหลดหน้าหลัก...</p>
+      <h2>ยินดีต้อนรับสู่ สวีรู้ทันสโตรก</h2>
+      <p>คุณสามารถเลือกเมนูผ่าน URL เช่น <code>?page=risk</code></p>
+      <p>หรือคลิกเมนูด้านล่าง</p>
+      <div class="d-grid gap-2 col-6 mx-auto">
+        <a href="?page=risk" class="btn btn-primary">ประเมินความเสี่ยง (Risk)</a>
+        <a href="?page=learning" class="btn btn-secondary">บทเรียน (Learning)</a>
+        <a href="?page=asm" class="btn btn-success">ASM</a>
+        <a href="?page=profile" class="btn btn-info">Profile</a>
+      </div>
     </div>
   </main>
 
+  <!-- 2) สคริปต์ LIFF จะรันเฉพาะในหน้า index -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
-    // --- ตั้งค่า LIFF ID ของคุณ ---
-    const liffId = "2005789397-pklo1yJP";
-
-    // รายชื่อเพจ .html ที่จะโหลดผ่าน ?page=
-    const allowedPages = ["index", "risk", "learning", "asm", "profile"];
-    const defaultPage  = "index";
-
-    document.addEventListener("DOMContentLoaded", initApp);
-
-    async function initApp() {
-      const container = document.getElementById("app-container");
+    (async () => {
+      const liffId = "2005789397-pklo1yJP";
       try {
-        // 1) init LIFF
         await liff.init({ liffId });
         if (!liff.isLoggedIn()) {
           liff.login();
-          return;
         }
-
-        // 2) อ่าน ?page=
-        const params = new URLSearchParams(window.location.search);
-        let page = params.get("page") || defaultPage;
-        if (!allowedPages.includes(page)) page = defaultPage;
-
-        // 3) โหลดเพจ
-        await loadPage(page);
-
-      } catch (err) {
-        container.innerHTML = `
+      } catch (e) {
+        document.getElementById("app-container").innerHTML = `
           <div class="alert alert-danger">
-            เกิดข้อผิดพลาดในการเริ่มต้น: ${err.message}
+            เกิดข้อผิดพลาดในการเริ่มต้น LIFF: ${e.message}
           </div>`;
       }
-    }
-
-    async function loadPage(pageName) {
-      const container = document.getElementById("app-container");
-      try {
-        const res = await fetch(`${pageName}.html`);
-        if (!res.ok) {
-          throw new Error(`ไม่สามารถโหลดไฟล์ ${pageName}.html (status ${res.status})`);
-        }
-
-        // นำ HTML มาแสดง
-        const html = await res.text();
-        container.innerHTML = html;
-
-        // โหลด <script> ของเพจนั้น ๆ เป็น ES Module
-        const scripts = container.querySelectorAll("script");
-        scripts.forEach(oldScript => {
-          const newScript = document.createElement("script");
-          // ถ้ามี src ให้โยกลิงก์มาด้วย
-          if (oldScript.src) {
-            newScript.src = oldScript.src;
-          } else {
-            // inline script: ใช้ type="module" เพื่อแยก scope
-            newScript.type = "module";
-            newScript.textContent = oldScript.textContent;
-          }
-          document.body.appendChild(newScript);
-          oldScript.remove();
-        });
-
-      } catch (err) {
-        container.innerHTML = `
-          <div class="alert alert-danger">
-            เกิดข้อผิดพลาด: ${err.message}
-          </div>`;
-      }
-    }
+    })();
   </script>
 </body>
 </html>
