@@ -20,10 +20,10 @@
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
-    // --- ตั้งค่า LIFF ID ---
+    // --- ตั้งค่า LIFF ID ของคุณ ---
     const liffId = "2005789397-pklo1yJP";
 
-    // รายชื่อเพจ .html ที่จะโหลด
+    // รายชื่อเพจ .html ที่จะโหลดผ่าน ?page=
     const allowedPages = ["index", "risk", "learning", "asm", "profile"];
     const defaultPage  = "index";
 
@@ -62,18 +62,21 @@
         if (!res.ok) {
           throw new Error(`ไม่สามารถโหลดไฟล์ ${pageName}.html (status ${res.status})`);
         }
+
         // นำ HTML มาแสดง
         const html = await res.text();
         container.innerHTML = html;
 
-        // --- รัน <script> ที่มากับไฟล์นั้น ๆ ---
+        // โหลด <script> ของเพจนั้น ๆ เป็น ES Module
         const scripts = container.querySelectorAll("script");
         scripts.forEach(oldScript => {
           const newScript = document.createElement("script");
-          // ถ้ามี src ให้ย้ายลิงก์
+          // ถ้ามี src ให้โยกลิงก์มาด้วย
           if (oldScript.src) {
             newScript.src = oldScript.src;
           } else {
+            // inline script: ใช้ type="module" เพื่อแยก scope
+            newScript.type = "module";
             newScript.textContent = oldScript.textContent;
           }
           document.body.appendChild(newScript);
