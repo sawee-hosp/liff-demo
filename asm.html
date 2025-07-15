@@ -6,14 +6,11 @@
   <title>ลงทะเบียน อสม.สโตรก</title>
   <!-- ฟอนต์ Noto Sans Thai -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap" rel="stylesheet"/>
-  <!-- Leaflet CSS -->
+  <!-- Leaflet CSS (ไม่มี integrity) -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-XQoYMqMTK8LvdlDXvXO0A+7Wt6pr2bMtMZU5C2JgS00="
-    crossorigin=""
   />
-  <!-- LINE LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     body {
@@ -36,9 +33,7 @@
       text-align: center;
       margin-bottom: 1rem;
     }
-    .form-group {
-      margin-bottom: 1rem;
-    }
+    .form-group { margin-bottom: 1rem; }
     .form-group label {
       display: block;
       font-weight: bold;
@@ -53,10 +48,7 @@
       border-radius: 8px;
       font-family: inherit;
     }
-    input[readonly] {
-      background: #e9ecef;
-      cursor: not-allowed;
-    }
+    input[readonly] { background: #e9ecef; cursor: not-allowed; }
     #map {
       width: 100%;
       height: 200px;
@@ -73,18 +65,13 @@
       border-radius: 8px;
       cursor: pointer;
     }
-    button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
+    button:disabled { background: #ccc; cursor: not-allowed; }
     .checkbox-group {
       display: flex;
       align-items: center;
       margin-bottom: 1rem;
     }
-    .checkbox-group input {
-      margin-right: 0.5rem;
-    }
+    .checkbox-group input { margin-right: 0.5rem; }
     .profile-pic {
       display: block;
       margin: 0 auto 1rem auto;
@@ -117,10 +104,10 @@
         <input type="text" id="phone" placeholder="0XXXXXXXXX">
       </div>
 
-      <!-- ชื่อ LINE ที่ให้เพิ่มเป็นเพื่อน -->
+      <!-- QR Code URL -->
       <div class="form-group">
-        <label for="lineId">ชื่อ LINE (ให้เพิ่มเพื่อน):</label>
-        <input type="text" id="lineId" placeholder="ระบุชื่อ LINE ของคุณ">
+        <label for="qrUrl">QR Code เพิ่มเพื่อน (URL):</label>
+        <input type="text" id="qrUrl" placeholder="วางลิงก์รูป QR code จาก Drive">
       </div>
 
       <!-- พื้นที่ -->
@@ -148,12 +135,8 @@
     </form>
   </div>
 
-  <!-- Leaflet JS -->
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-o9N1j7kLkTg0vP8icm+VQVnJgOd3QoDjxA7aGJS5Vnk="
-    crossorigin=""
-  ></script>
+  <!-- Leaflet JS (ไม่มี integrity) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
     const LIFF_ID = '2005789397-pklo1yJP';
@@ -197,7 +180,6 @@
     }
 
     function initLeafletMap() {
-      // จุดเริ่มต้น: อำเภอสวี, จ.ชุมพร
       const center = [13.4500, 99.1000];
       const map = L.map('map').setView(center, 12);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -224,9 +206,9 @@
       const realName = document.getElementById('realName').value.trim();
       const phoneRaw = document.getElementById('phone').value.trim();
       const phone    = phoneRaw.startsWith('0') ? phoneRaw : '0' + phoneRaw;
-      const lineId   = document.getElementById('lineId').value.trim();
+      const qrUrl    = document.getElementById('qrUrl').value.trim();
       const area     = document.getElementById('area').value;
-      if (!realName || !phone || !lineId || !area) {
+      if (!realName || !phone || !qrUrl || !area) {
         alert('กรุณากรอกข้อมูลให้ครบทุกช่อง');
         return;
       }
@@ -238,7 +220,7 @@
         pictureUrl:  userProfile.pictureUrl,
         realName,
         phone,
-        lineId,
+        qrUrl,
         area,
         latlong:     document.getElementById('latlong').value,
         pdpa:        document.getElementById('pdpa').checked ? 'ยินยอม' : 'ไม่ยินยอม'
