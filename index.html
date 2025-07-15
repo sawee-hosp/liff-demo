@@ -1,37 +1,80 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-  <base target="_top">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>โปรไฟล์ของฉัน</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สวีรู้ทันสโตรก</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="p-3">
-  <div id="loading" class="text-center"><div class="spinner-border"></div><p>กำลังโหลด...</p></div>
-  <div id="content" class="d-none">
-    <div class="text-center mb-4">
-      <img id="profilePicture" style="width:100px; border-radius: 50%;">
-      <h5 id="displayName" class="mt-2"></h5>
-    </div>
-    <div class="d-grid gap-3">
-      <a href="https://liff.line.me/2005789397-pklo1yJP?page=risk" class="btn btn-primary btn-lg">ทำแบบประเมินความเสี่ยง</a>
-      <a href="https://liff.line.me/2005789397-pklo1yJP?page=learning" class="btn btn-info btn-lg">บทเรียนและเก็บคะแนน</a>
-      <a href="https://liff.line.me/2005789397-pklo1yJP?page=asm" class="btn btn-success btn-lg">สำหรับ อสม.</a>
-    </div>
-  </div>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script>
-    async function main() {
-      await liff.init({ liffId: "2005789397-pklo1yJP" });
-      if (!liff.isLoggedIn()) { liff.login(); return; }
-      const profile = await liff.getProfile();
-      document.getElementById('profilePicture').src = profile.pictureUrl;
-      document.getElementById('displayName').textContent = profile.displayName;
-      document.getElementById('loading').classList.add('d-none');
-      document.getElementById('content').classList.remove('d-none');
-    }
-    main();
-  </script>
+
+    <main id="app-container">
+        <div class="text-center">
+            <div class="spinner-border"></div>
+            <p>กำลังโหลดหน้าหลัก...</p>
+        </div>
+    </main>
+
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script>
+        // --- การตั้งค่า LIFF ---
+        const liffId = "2005789397-pklo1yJP";
+
+        // --- กำหนดรายชื่อหน้าที่อนุญาตให้โหลด ---
+        const allowedPages = ['risk', 'learning', 'asm', 'ex-index'];
+        // --- หน้าเริ่มต้นถ้าไม่มี ?page หรือค่าผิด ---
+        const defaultPage = 'ex-index';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('app-container');
+
+            try {
+                // เริ่มต้น LIFF ก่อนเสมอ
+                await liff.init({ liffId });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+
+                // อ่านค่า 'page' จาก URL
+                const params = new URLSearchParams(window.location.search);
+                let page = params.get('page') || defaultPage;
+                if (!allowedPages.includes(page)) {
+                    page = defaultPage;
+                }
+
+                await loadPage(page);
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        เกิดข้อผิดพลาดในการเริ่มต้น: ${error.message}
+                    </div>`;
+            }
+        });
+
+        // --- ฟังก์ชันโหลด HTML หน้าเพจ ---
+        async function loadPage(pageName) {
+            const container = document.getElementById('app-container');
+            try {
+                const response = await fetch(`${pageName}.html`);
+                if (!response.ok) throw new Error(`ไม่สามารถโหลดไฟล์ ${pageName}.html`);
+
+                // นำ HTML มาใส่ใน container
+                container.innerHTML = await response.text();
+
+                // ถ้ามีสคริปต์เฉพาะหน้าภายใน <script id="page-script">...</script>
+                const pageScript = container.querySelector('#page-script');
+                if (pageScript) {
+                    // รันโค้ดสคริปต์ในสโคปปัจจุบัน
+                    new Function(pageScript.textContent)();
+                }
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        เกิดข้อผิดพลาด: ${error.message}
+                    </div>`;
+            }
+        }
+    </script>
 </body>
 </html>
