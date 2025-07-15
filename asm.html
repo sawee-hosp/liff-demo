@@ -2,39 +2,41 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ลงทะเบียน อสม.สโตรก</title>
+  <!-- Noto Sans Thai -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai&display=swap" rel="stylesheet"/>
+  <!-- LINE LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family:"Noto Sans Thai",sans-serif; background:#f5f5f5; margin:0; padding:16px }
+    body { font-family:"Noto Sans Thai",sans-serif; background:#f5f5f5; margin:0; padding:16px; }
     .card { background:#fff; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,0.1);
-      max-width:400px; margin:0 auto; padding:24px }
-    h1 { font-size:1.5rem; color:#003366; text-align:center; margin-bottom:1rem }
-    .form-group { display:flex; align-items:center; margin-bottom:1rem }
-    .form-group label { flex:1; min-width:100px; font-weight:bold }
-    .form-group .input-wrapper { flex:2 }
+            max-width:400px; margin:0 auto; padding:24px; }
+    h1 { font-size:1.5rem; color:#003366; text-align:center; margin-bottom:1rem; }
+    .form-group { display:flex; align-items:center; margin-bottom:1rem; }
+    .form-group label { flex:1; min-width:100px; font-weight:bold; }
+    .form-group .input-wrapper { flex:2; }
     .form-group input, .form-group select {
       width:100%; padding:0.5rem; font-size:1rem; border:1px solid #ccc;
-      border-radius:8px; font-family:inherit
+      border-radius:8px; font-family:inherit;
     }
-    input[readonly] { background:#e9ecef; cursor:not-allowed }
-    .profile-img-wrapper { flex:2; text-align:center }
-    .profile-img-wrapper img { width:64px; height:64px; border-radius:50% }
-    .checkbox-group { display:flex; align-items:center; margin-bottom:1rem }
-    .checkbox-group input { margin-right:0.5rem }
+    input[readonly] { background:#e9ecef; cursor:not-allowed; }
+    .profile-img-wrapper { flex:2; text-align:center; }
+    .profile-img-wrapper img { width:64px; height:64px; border-radius:50%; }
+    .checkbox-group { display:flex; align-items:center; margin-bottom:1rem; }
+    .checkbox-group input { margin-right:0.5rem; }
     button {
       width:100%; padding:0.75rem; font-size:1rem; font-family:"Noto Sans Thai",sans-serif;
-      color:#fff; background:#007bff; border:none; border-radius:8px; cursor:pointer
+      color:#fff; background:#007bff; border:none; border-radius:8px; cursor:pointer;
     }
-    button:disabled { background:#ccc; cursor:not-allowed }
+    button:disabled { background:#ccc; cursor:not-allowed; }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>ลงทะเบียน อสม.สโตรก</h1>
 
-    <!-- LINE Profile -->
+    <!-- LINE profile -->
     <div class="form-group">
       <label>ชื่อใน LINE:</label>
       <div class="input-wrapper">
@@ -48,11 +50,11 @@
       </div>
     </div>
 
-    <!-- ข้อมูลลงทะเบียน -->
+    <!-- Registration fields -->
     <div class="form-group">
       <label for="realName">ชื่อ-นามสกุลจริง:</label>
       <div class="input-wrapper">
-        <input type="text" id="realName" placeholder="ชื่อ-นามสกุลจริง">
+        <input type="text" id="realName" placeholder="ระบุชื่อ-นามสกุลจริง">
       </div>
     </div>
     <div class="form-group">
@@ -67,16 +69,14 @@
         <input type="file" id="qrFile" accept="image/*">
       </div>
     </div>
-
-    <!-- พื้นที่ (multi‑select) -->
     <div class="form-group">
       <label for="areas">พื้นที่ (กด Ctrl เลือกหลาย):</label>
       <div class="input-wrapper">
-        <select id="areas" multiple size="5"></select>
+        <select id="areas" multiple size="5">
+          <option>กำลังโหลด...</option>
+        </select>
       </div>
     </div>
-
-    <!-- PDPA -->
     <div class="checkbox-group">
       <input type="checkbox" id="pdpa" checked>
       <label for="pdpa">อนุญาตให้ทีม รพ.สวี ใช้ข้อมูลส่วนบุคคลเพื่อดูแลสุขภาพ</label>
@@ -91,14 +91,17 @@
     let profile;
 
     window.onload = async () => {
-      // --- เริ่ม LIFF ---
+      // 1) Initialize LIFF
       await liff.init({ liffId: LIFF_ID });
-      if (!liff.isLoggedIn()) { liff.login(); return; }
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
       profile = await liff.getProfile();
       document.getElementById('displayName').value  = profile.displayName;
       document.getElementById('profilePicture').src = profile.pictureUrl;
 
-      // --- JSONP โหลดพื้นที่ ---
+      // 2) JSONP load areas
       window.handleAreas = res => {
         const sel = document.getElementById('areas');
         sel.innerHTML = '';
@@ -116,45 +119,50 @@
       s.src = `${GAS_URL}?action=getAvailableAreas&callback=handleAreas`;
       document.head.appendChild(s);
 
-      // --- ปุ่มลงทะเบียน ---
+      // 3) Submit handler
       document.getElementById('submitBtn').onclick = async () => {
         const realName = document.getElementById('realName').value.trim();
         const phoneRaw = document.getElementById('phone').value.trim();
-        const phone    = phoneRaw.startsWith('0') ? phoneRaw : '0'+phoneRaw;
+        const phone    = phoneRaw.startsWith('0') ? phoneRaw : '0' + phoneRaw;
         const qrFile   = document.getElementById('qrFile').files[0];
         const areas    = Array.from(document.getElementById('areas').selectedOptions)
-                               .map(o=>o.value);
+                               .map(o => o.value);
         const pdpa     = document.getElementById('pdpa').checked ? 'ยินยอม' : 'ไม่ยินยอม';
 
-        if (!realName || !phone || !qrFile || areas.length===0) {
-          return alert('กรุณากรอกข้อมูลให้ครบและเลือกพื้นที่อย่างน้อย 1 แห่ง');
+        if (!realName || !phone || !qrFile || areas.length === 0) {
+          alert('กรุณากรอกข้อมูลให้ครบและเลือกพื้นที่อย่างน้อย 1 แห่ง');
+          return;
         }
         document.getElementById('submitBtn').disabled = true;
 
-        // --- FormData POST แบบ simple (no CORS preflight) ---
         const fd = new FormData();
-        fd.append('action','registerAsm');
+        fd.append('action', 'registerAsm');
         fd.append('displayName', profile.displayName);
         fd.append('userId',      profile.userId);
         fd.append('pictureUrl',  profile.pictureUrl);
         fd.append('realName',    realName);
         fd.append('phone',       phone);
         fd.append('pdpa',        pdpa);
-        areas.forEach(a=> fd.append('areas', a));
+        areas.forEach(a => fd.append('areas', a));
         fd.append('qrFile',      qrFile);
 
-        const resp = await fetch(GAS_URL, { method:'POST', body:fd });
-        const data = await resp.json();
-        if (data.status === 'done') {
-          alert('ลงทะเบียนเรียบร้อยแล้ว');
-          // รีโหลดพื้นที่อีกครั้ง
-          const s2 = document.createElement('script');
-          s2.src = `${GAS_URL}?action=getAvailableAreas&callback=handleAreas`;
-          document.head.appendChild(s2);
-        } else {
-          alert('Error: '+data.message);
+        try {
+          const resp = await fetch(GAS_URL, { method: 'POST', body: fd });
+          const json = await resp.json();
+          if (json.status === 'done') {
+            alert('ลงทะเบียนเรียบร้อยแล้ว');
+            // reload areas
+            const s2 = document.createElement('script');
+            s2.src = `${GAS_URL}?action=getAvailableAreas&callback=handleAreas`;
+            document.head.appendChild(s2);
+          } else {
+            throw new Error(json.message);
+          }
+        } catch (err) {
+          alert('เกิดข้อผิดพลาด: ' + err.message);
+        } finally {
+          document.getElementById('submitBtn').disabled = false;
         }
-        document.getElementById('submitBtn').disabled = false;
       };
     };
   </script>
